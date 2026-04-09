@@ -1,36 +1,5 @@
-# AGENTS.md
+<!-- BEGIN:nextjs-agent-rules -->
+# This is NOT the Next.js you know
 
-## 你在这个项目中的角色
-你是本项目的开发执行助手。你的任务是帮助搭建一个高端、商业感强的历史互动小游戏网页原型。
-
-## 工作方式
-- 每次收到任务，先检查当前项目结构
-- 先给出简短计划，再开始修改
-- 一次只完成一个明确目标
-- 不要一次性做太多功能
-- 优先保证页面可运行、结构清晰、风格统一
-
-## 产品要求
-- 面向普通用户，不是教学系统
-- 风格高端、简洁、沉浸
-- 历史感要有，但语言不要太古板
-- 先网页试玩版，后续再扩展
-
-## 开发要求
-- 不要把大量假数据直接写死在页面组件里
-- 页面必须有空状态、加载状态、错误提示
-- 组件尽量复用
-- 不要把一个页面写成超大文件
-- 修改后说明你改了什么
-
-## 剧情模块要求
-- 不要把 AI 当成全知数据库
-- 事件剧情以后要按“一幕一幕”生成
-- 不要让 AI 自由输出整页内容
-- 以后接 AI 时，优先使用固定结构返回场景内容
-
-## 输出要求
-每次完成任务后，请用通俗中文告诉我：
-1. 做了什么
-2. 还没做什么
-3. 我下一步应该让你做什么
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` before writing any code. Heed deprecation notices.
+<!-- END:nextjs-agent-rules -->
