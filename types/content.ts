@@ -27,7 +27,23 @@ export type HistoricalFigure = {
   keywords: string[];
   portraitLabel: string;
   portraitTone: Tone;
+  experienceOptions: FigureExperienceOption[];
   image?: string;
+};
+
+export type FigureExperienceStatus =
+  | "playable"
+  | "candidate"
+  | "coming-soon";
+
+export type FigureExperienceOption = {
+  id: string;
+  title: string;
+  description: string;
+  status: FigureExperienceStatus;
+  statusLabel: string;
+  ctaLabel: string;
+  href?: string;
 };
 
 export type HongmenRole = {

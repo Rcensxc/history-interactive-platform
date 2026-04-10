@@ -1,10 +1,21 @@
 "use client";
 
+import Link from "next/link";
 import { useMemo, useState } from "react";
 import { historicalFigures } from "@/data/historical-figures";
 import { cn } from "@/lib/cn";
 import { Panel } from "@/components/ui/panel";
 import { PlaceholderArt } from "@/components/ui/placeholder-art";
+import type { FigureExperienceStatus } from "@/types/content";
+
+const experienceStatusStyles: Record<FigureExperienceStatus, string> = {
+  playable:
+    "border-emerald-200/25 bg-emerald-100/10 text-emerald-100",
+  candidate:
+    "border-amber-200/25 bg-amber-100/10 text-amber-50",
+  "coming-soon":
+    "border-white/10 bg-white/5 text-stone-300",
+};
 
 export function FigureGallery() {
   const dynasties = useMemo(
@@ -179,35 +190,101 @@ export function FigureGallery() {
               className="min-h-[260px]"
             />
 
-            <div className="space-y-4 text-sm leading-7 text-stone-300">
-              <div>
-                <p className="text-stone-500">人物介绍</p>
-                <p className="mt-2">{selectedFigure.introduction}</p>
-              </div>
-              <div className="grid gap-4 md:grid-cols-2">
-                <div>
-                  <p className="text-stone-500">朝代</p>
-                  <p className="mt-2">{selectedFigure.dynasty}</p>
+            <div className="space-y-5">
+              <div className="rounded-[24px] border border-white/10 bg-black/15 p-5">
+                <p className="text-xs uppercase tracking-[0.3em] text-amber-200/70">
+                  人物档案
+                </p>
+                <div className="mt-4 space-y-5 text-sm leading-7 text-stone-300">
+                  <div>
+                    <p className="text-stone-500">人物简介</p>
+                    <p className="mt-2">{selectedFigure.introduction}</p>
+                  </div>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div className="rounded-[20px] border border-white/10 bg-white/5 p-4">
+                      <p className="text-stone-500">朝代</p>
+                      <p className="mt-2 text-stone-100">{selectedFigure.dynasty}</p>
+                    </div>
+                    <div className="rounded-[20px] border border-white/10 bg-white/5 p-4">
+                      <p className="text-stone-500">身份 / 职业</p>
+                      <p className="mt-2 text-stone-100">{selectedFigure.role}</p>
+                    </div>
+                  </div>
+                  <div className="rounded-[20px] border border-white/10 bg-white/5 p-4">
+                    <p className="text-stone-500">代表事件</p>
+                    <p className="mt-2 text-stone-100">
+                      {selectedFigure.signatureEvent}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-stone-500">关键词</p>
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {selectedFigure.keywords.map((keyword) => (
+                        <span
+                          key={keyword}
+                          className="rounded-full border border-white/10 bg-white/5 px-3 py-1"
+                        >
+                          {keyword}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-stone-500">职业 / 身份</p>
-                  <p className="mt-2">{selectedFigure.role}</p>
+              </div>
+
+              <div className="rounded-[24px] border border-amber-200/18 bg-amber-100/8 p-5">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.3em] text-amber-200/70">
+                      下一步动作
+                    </p>
+                    <h3 className="mt-3 font-display text-2xl text-amber-50">
+                      看完人物后，可以直接继续体验
+                    </h3>
+                  </div>
+                  <div className="rounded-full border border-white/10 bg-black/15 px-4 py-2 text-sm text-stone-200">
+                    当前仅开放少量试玩入口，先把路径结构搭清楚
+                  </div>
                 </div>
-              </div>
-              <div>
-                <p className="text-stone-500">代表事件</p>
-                <p className="mt-2">{selectedFigure.signatureEvent}</p>
-              </div>
-              <div>
-                <p className="text-stone-500">关键词</p>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {selectedFigure.keywords.map((keyword) => (
-                    <span
-                      key={keyword}
-                      className="rounded-full border border-white/10 bg-white/5 px-3 py-1"
+
+                <div className="mt-5 space-y-3">
+                  {selectedFigure.experienceOptions.map((option) => (
+                    <div
+                      key={option.id}
+                      className="rounded-[22px] border border-white/10 bg-black/15 p-4"
                     >
-                      {keyword}
-                    </span>
+                      <div className="flex flex-wrap items-start justify-between gap-3">
+                        <div className="max-w-[22rem]">
+                          <div className="flex flex-wrap items-center gap-3">
+                            <p className="text-base text-stone-100">{option.title}</p>
+                            <span
+                              className={cn(
+                                "rounded-full border px-3 py-1 text-xs",
+                                experienceStatusStyles[option.status],
+                              )}
+                            >
+                              {option.statusLabel}
+                            </span>
+                          </div>
+                          <p className="mt-3 text-sm leading-7 text-stone-300">
+                            {option.description}
+                          </p>
+                        </div>
+
+                        {option.href ? (
+                          <Link
+                            href={option.href}
+                            className="inline-flex rounded-full border border-amber-200/25 bg-amber-100/10 px-4 py-2 text-sm text-amber-50 transition hover:border-amber-200/40 hover:bg-amber-100/15"
+                          >
+                            {option.ctaLabel}
+                          </Link>
+                        ) : (
+                          <span className="inline-flex rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-stone-400">
+                            {option.ctaLabel}
+                          </span>
+                        )}
+                      </div>
+                    </div>
                   ))}
                 </div>
               </div>
