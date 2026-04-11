@@ -1,5 +1,14 @@
 export type Tone = "amber" | "jade" | "ink" | "crimson" | "bronze";
 
+export type PlaceholderAsset = {
+  label: string;
+  tone: Tone;
+  description?: string;
+  subtitle?: string;
+  image?: string;
+  alignment?: "left" | "center" | "right";
+};
+
 export type NavigationItem = {
   href: string;
   label: string;
@@ -28,6 +37,8 @@ export type HistoricalFigure = {
   portraitLabel: string;
   portraitTone: Tone;
   experienceOptions: FigureExperienceOption[];
+  relatedEventIds?: string[];
+  canJoinTimeTheater?: boolean;
   image?: string;
 };
 
@@ -45,6 +56,19 @@ export type HistoricalEvent = {
   backdropLabel: string;
   backdropDescription: string;
   availableViewpointIds: string[];
+  recommendedViewpointIds?: string[];
+  hasPlayableStory?: boolean;
+  backdropTone?: Tone;
+};
+
+export type FigureEventRelation = {
+  id: string;
+  figureId: string;
+  eventId?: string;
+  eventTitle: string;
+  summary: string;
+  canBeViewpoint: boolean;
+  isRecommendedViewpoint: boolean;
 };
 
 export type FigureExperienceKind = "event" | "time-theater";
@@ -67,6 +91,7 @@ export type FigureExperienceOption = {
 
 export type EventViewpoint = {
   id: string;
+  figureId?: string;
   name: string;
   title: string;
   summary: string;
@@ -74,6 +99,7 @@ export type EventViewpoint = {
   pressure: string;
   portraitLabel: string;
   portraitTone: Tone;
+  isRecommended?: boolean;
 };
 
 export type EventChoice = {
@@ -81,15 +107,20 @@ export type EventChoice = {
   label: string;
   outcome: string;
   isHistorical?: boolean;
+  nextSceneId?: string;
 };
 
 export type EventScene = {
   id: string;
   type: "narration" | "dialogue" | "decision";
   speaker: string;
+  speakerId?: string;
   text: string;
   note?: string;
+  background?: PlaceholderAsset;
+  visualKey?: string;
   choices?: EventChoice[];
+  nextSceneId?: string;
 };
 
 export type EventSpeakerVisual = {
@@ -100,9 +131,19 @@ export type EventSpeakerVisual = {
 };
 
 export type EventPlayableContent = {
+  eventId?: string;
+  initialSceneId?: string;
+  defaultBackdrop?: PlaceholderAsset;
   viewpoints: EventViewpoint[];
   scenes: EventScene[];
   speakerVisuals: Record<string, EventSpeakerVisual>;
+};
+
+export type EventPreparationData = {
+  event: HistoricalEvent;
+  viewpoints: EventViewpoint[];
+  recommendedViewpointIds: string[];
+  hasPlayableStory: boolean;
 };
 
 export type HongmenRole = EventViewpoint;

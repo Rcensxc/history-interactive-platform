@@ -1,15 +1,14 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { historicalFigures } from "@/data/historical-figures";
 import {
   defaultTimeTheaterSelection,
-  timeTheaterCastIds,
   timeTheaterSpeakerVisuals,
   timeTheaterStageMeta,
   timeTheaterScripts,
   timeTheaterTopics,
 } from "@/data/time-theater";
+import { historicalFigures } from "@/data/history-registry";
 import { cn } from "@/lib/cn";
 import { Panel } from "@/components/ui/panel";
 import { PlaceholderArt } from "@/components/ui/placeholder-art";
@@ -18,7 +17,7 @@ import { SectionTitle } from "@/components/ui/section-title";
 export function TimeTheaterDemo() {
   const cast = useMemo(
     () =>
-      historicalFigures.filter((figure) => timeTheaterCastIds.includes(figure.id)),
+      historicalFigures.filter((figure) => figure.canJoinTimeTheater),
     [],
   );
 
