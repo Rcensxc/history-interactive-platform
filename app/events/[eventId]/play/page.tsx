@@ -1,10 +1,15 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { HongmenAiStoryPlayer } from "@/components/events/hongmen-ai-story-player";
 import { EventStoryPlayer } from "@/components/events/event-story-player";
 import {
   getEventPlayableContent,
   getHistoricalEvent,
 } from "@/data/history-registry";
+import {
+  getHongmenAiInitialViewpointId,
+  shouldUseHongmenAiMode,
+} from "@/lib/hongmen-ai";
 
 type PageProps = {
   params: Promise<{ eventId: string }>;
@@ -35,6 +40,19 @@ export default async function EventPlayPage({
 
   if (!eventItem || !eventItem.hasPlayableStory || !playableContent) {
     notFound();
+  }
+
+  const initialViewpointId =
+    query.viewpoint?.trim() || getHongmenAiInitialViewpointId();
+
+  if (shouldUseHongmenAiMode(eventId, initialViewpointId)) {
+    return (
+      <HongmenAiStoryPlayer
+        eventItem={eventItem}
+        playableContent={playableContent}
+        initialViewpointId={initialViewpointId}
+      />
+    );
   }
 
   return (
