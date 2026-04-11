@@ -9,6 +9,7 @@ import type {
   HistoricalFigure,
 } from "@/types/content";
 import { createEventPlayableContent } from "@/lib/event-story-runtime";
+import { redCliffsMockAiStoryOutput } from "@/data/mock-ai-scene-output";
 
 const historicalFigureCatalog: Array<Omit<HistoricalFigure, "experienceOptions">> = [
   {
@@ -384,6 +385,39 @@ const redCliffsSpeakerVisualMap: Record<string, EventSpeakerVisual> = {
   },
 };
 
+const redCliffsAiBackdropMap = {
+  "river-night": {
+    label: "赤壁",
+    tone: "ink",
+    description:
+      "背景占位图：江面夜色、联军战船与风向未定时的压迫感。",
+  },
+  "command-tent": {
+    label: "联营",
+    tone: "ink",
+    description:
+      "背景占位图：江边军帐、沙盘和烛火下不断调整的布局。",
+  },
+  "strategy-table": {
+    label: "谋局",
+    tone: "amber",
+    description:
+      "背景占位图：军图、风向、联盟信任与执行时机同时被摆在案上。",
+  },
+  "departure-dock": {
+    label: "出发",
+    tone: "crimson",
+    description:
+      "背景占位图：江边登船点、暗处待发的战船，以及行动前的短暂压抑。",
+  },
+  "embers-aftermath": {
+    label: "火光",
+    tone: "amber",
+    description:
+      "背景占位图：火光后的江面余温，大局已成，但真正决定胜负的是更前面的判断。",
+  },
+} as const;
+
 const eventStoryCatalog: Record<string, EventPlayableContent> = {
   "hongmen-banquet": createEventPlayableContent({
     eventId: "hongmen-banquet",
@@ -505,6 +539,8 @@ const eventStoryCatalog: Record<string, EventPlayableContent> = {
   "battle-of-red-cliffs": createEventPlayableContent({
     eventId: "battle-of-red-cliffs",
     initialSceneId: "river-night",
+    aiOutput: redCliffsMockAiStoryOutput,
+    backgrounds: redCliffsAiBackdropMap,
     defaultBackdrop: {
       label: "赤壁",
       tone: "ink",
@@ -731,6 +767,13 @@ const hongmenEvent = historicalEventCatalog.find(
 const hongmenPlayableContent = eventStoryCatalog["hongmen-banquet"];
 
 export const eventPlayableContent = eventStoryCatalog;
+export const aiStructuredStoryFixtures = {
+  "battle-of-red-cliffs": {
+    output: redCliffsMockAiStoryOutput,
+    backgrounds: redCliffsAiBackdropMap,
+    speakerVisuals: redCliffsSpeakerVisualMap,
+  },
+} as const;
 
 export const hongmenRoles = hongmenPlayableContent?.viewpoints ?? [];
 

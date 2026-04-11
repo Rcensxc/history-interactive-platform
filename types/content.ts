@@ -102,12 +102,19 @@ export type EventViewpoint = {
   isRecommended?: boolean;
 };
 
+export type EventStateValue = string | number | boolean;
+
+export type EventStateUpdate = {
+  set?: Record<string, EventStateValue>;
+};
+
 export type EventChoice = {
   id: string;
   label: string;
   outcome: string;
   isHistorical?: boolean;
   nextSceneId?: string;
+  stateUpdate?: EventStateUpdate;
 };
 
 export type EventSceneType = "narration" | "dialogue" | "decision";
@@ -130,6 +137,7 @@ export type EventScene = {
   standee?: EventSceneStandee;
   choices?: EventChoice[];
   nextSceneId?: string;
+  stateUpdate?: EventStateUpdate;
 };
 
 export type EventSpeakerVisual = {
@@ -140,9 +148,11 @@ export type EventSpeakerVisual = {
 };
 
 export type EventStoryProtocolVersion = "event-story-v1";
+export type EventPlayableContentSource = "local-scripted" | "ai-structured";
 
 export type EventPlayableContent = {
   protocolVersion: EventStoryProtocolVersion;
+  contentSource: EventPlayableContentSource;
   eventId: string;
   initialSceneId: string;
   defaultBackdrop: PlaceholderAsset;
@@ -163,6 +173,44 @@ export type EventPreparationData = {
   viewpoints: EventViewpoint[];
   recommendedViewpointIds: string[];
   hasPlayableStory: boolean;
+};
+
+export type AiStructuredSceneChoice = {
+  id: string;
+  label: string;
+  outcome?: string;
+  isHistorical?: boolean;
+  nextSceneId?: string;
+  stateUpdate?: EventStateUpdate;
+};
+
+export type AiStructuredSceneNode = {
+  sceneId: string;
+  type: EventSceneType;
+  speaker: string;
+  text: string;
+  backgroundTag: string;
+  showStandee: boolean;
+  standeeKey?: string;
+  choices?: AiStructuredSceneChoice[];
+  nextSceneId?: string;
+  stateUpdate?: EventStateUpdate;
+};
+
+export type AiStructuredStoryProtocolVersion = "ai-scene-v1";
+
+export type AiStructuredStoryOutput = {
+  protocolVersion: AiStructuredStoryProtocolVersion;
+  initialSceneId: string;
+  scenes: AiStructuredSceneNode[];
+};
+
+export type AiStructuredSceneProtocolDefinition = {
+  protocolVersion: AiStructuredStoryProtocolVersion;
+  supportedSceneTypes: EventSceneType[];
+  requiredSceneFields: string[];
+  supportedBehaviors: string[];
+  unsupportedBehaviors: string[];
 };
 
 export type HongmenRole = EventViewpoint;

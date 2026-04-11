@@ -1,14 +1,17 @@
 import type {
+  AiStructuredStoryOutput,
   EventChoice,
   EventPlayableContent,
   EventScene,
   EventSceneStandee,
+  EventStateUpdate,
   EventSceneType,
   EventSpeakerVisual,
   EventStoryPlayerCapabilities,
   EventViewpoint,
   PlaceholderAsset,
 } from "@/types/content";
+import { adaptAiStructuredStoryToPlayableContent } from "@/lib/ai-scene-adapter";
 
 export const eventStoryPlayerCapabilities: EventStoryPlayerCapabilities = {
   protocolVersion: "event-story-v1",
@@ -44,14 +47,29 @@ type LegacyEventSceneInput = {
   visualKey?: string;
   choices?: EventChoice[];
   nextSceneId?: string;
+  stateUpdate?: EventStateUpdate;
 };
 
-type EventPlayableContentInput = Omit<
+type BaseEventPlayableContentInput = Omit<
   EventPlayableContent,
-  "protocolVersion" | "scenes"
-> & {
+  "protocolVersion" | "contentSource" | "scenes"
+>;
+
+type LocalEventPlayableContentInput = BaseEventPlayableContentInput & {
   scenes: LegacyEventSceneInput[];
+  aiOutput?: never;
+  backgrounds?: never;
 };
+
+type AiEventPlayableContentInput = BaseEventPlayableContentInput & {
+  scenes?: LegacyEventSceneInput[];
+  aiOutput: AiStructuredStoryOutput;
+  backgrounds: Record<string, PlaceholderAsset>;
+};
+
+type EventPlayableContentInput =
+  | LocalEventPlayableContentInput
+  | AiEventPlayableContentInput;
 
 function normalizeSceneStandee(scene: LegacyEventSceneInput): EventSceneStandee {
   if (scene.type !== "dialogue") {
@@ -85,14 +103,27 @@ function normalizeEventScene(
     standee: normalizeSceneStandee(scene),
     choices: scene.choices,
     nextSceneId: scene.nextSceneId,
+    stateUpdate: scene.stateUpdate,
   };
 }
 
 export function createEventPlayableContent(
   input: EventPlayableContentInput,
 ): EventPlayableContent {
+  if ("aiOutput" in input && input.aiOutput) {
+    return adaptAiStructuredStoryToPlayableContent({
+      eventId: input.eventId,
+      output: input.aiOutput,
+      defaultBackdrop: input.defaultBackdrop,
+      backgrounds: input.backgrounds,
+      viewpoints: input.viewpoints,
+      speakerVisuals: input.speakerVisuals,
+    });
+  }
+
   return {
     protocolVersion: "event-story-v1",
+    contentSource: "local-scripted",
     eventId: input.eventId,
     initialSceneId: input.initialSceneId,
     defaultBackdrop: input.defaultBackdrop,
