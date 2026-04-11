@@ -8,6 +8,7 @@ import type {
   HistoricalEvent,
   HistoricalFigure,
 } from "@/types/content";
+import { createEventPlayableContent } from "@/lib/event-story-runtime";
 
 const historicalFigureCatalog: Array<Omit<HistoricalFigure, "experienceOptions">> = [
   {
@@ -384,7 +385,7 @@ const redCliffsSpeakerVisualMap: Record<string, EventSpeakerVisual> = {
 };
 
 const eventStoryCatalog: Record<string, EventPlayableContent> = {
-  "hongmen-banquet": {
+  "hongmen-banquet": createEventPlayableContent({
     eventId: "hongmen-banquet",
     initialSceneId: "arrival",
     defaultBackdrop: {
@@ -500,8 +501,8 @@ const eventStoryCatalog: Record<string, EventPlayableContent> = {
         note: "下一阶段可以在这里接入更多分支和 AI 生成对话。",
       },
     ],
-  },
-  "battle-of-red-cliffs": {
+  }),
+  "battle-of-red-cliffs": createEventPlayableContent({
     eventId: "battle-of-red-cliffs",
     initialSceneId: "river-night",
     defaultBackdrop: {
@@ -596,7 +597,7 @@ const eventStoryCatalog: Record<string, EventPlayableContent> = {
           "赤壁之战最迷人的地方，不只是大火烧船的那一幕，而是所有关键判断都必须在火光亮起之前就完成。真正的胜负，往往先决定于看不见的那一段时间。",
       },
     ],
-  },
+  }),
 };
 
 export function getHistoricalFigure(figureId: string) {

@@ -110,15 +110,24 @@ export type EventChoice = {
   nextSceneId?: string;
 };
 
+export type EventSceneType = "narration" | "dialogue" | "decision";
+
+export type EventSceneStandee = {
+  mode: "hidden" | "speaker";
+  speakerId?: string;
+  visualKey?: string;
+  hideForViewpoint?: boolean;
+};
+
 export type EventScene = {
-  id: string;
-  type: "narration" | "dialogue" | "decision";
+  sceneId: string;
+  type: EventSceneType;
   speaker: string;
   speakerId?: string;
   text: string;
   note?: string;
   background?: PlaceholderAsset;
-  visualKey?: string;
+  standee?: EventSceneStandee;
   choices?: EventChoice[];
   nextSceneId?: string;
 };
@@ -130,13 +139,23 @@ export type EventSpeakerVisual = {
   alignment: "left" | "center" | "right";
 };
 
+export type EventStoryProtocolVersion = "event-story-v1";
+
 export type EventPlayableContent = {
-  eventId?: string;
-  initialSceneId?: string;
-  defaultBackdrop?: PlaceholderAsset;
+  protocolVersion: EventStoryProtocolVersion;
+  eventId: string;
+  initialSceneId: string;
+  defaultBackdrop: PlaceholderAsset;
   viewpoints: EventViewpoint[];
   scenes: EventScene[];
   speakerVisuals: Record<string, EventSpeakerVisual>;
+};
+
+export type EventStoryPlayerCapabilities = {
+  protocolVersion: EventStoryProtocolVersion;
+  supportedSceneTypes: EventSceneType[];
+  supportedBehaviors: string[];
+  unsupportedBehaviors: string[];
 };
 
 export type EventPreparationData = {

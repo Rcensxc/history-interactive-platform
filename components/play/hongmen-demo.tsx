@@ -25,7 +25,7 @@ export function HongmenDemo() {
 
   const currentScene = hongmenScenes[Math.min(progress - 1, hongmenScenes.length - 1)];
   const isFinished = progress >= hongmenScenes.length;
-  const currentChoice = currentScene ? choices[currentScene.id] : undefined;
+  const currentChoice = currentScene ? choices[currentScene.sceneId] : undefined;
   const activeVisual =
     hongmenSpeakerVisuals[currentScene?.speaker ?? ""] ?? {
       label: selectedRole?.portraitLabel ?? "宴",
@@ -176,7 +176,7 @@ export function HongmenDemo() {
                           type="button"
                           onClick={(event) => {
                             event.stopPropagation();
-                            handleChoice(currentScene.id, choice);
+                            handleChoice(currentScene.sceneId, choice);
                           }}
                           className="group relative overflow-hidden rounded-[20px] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02))] px-5 py-4 text-left text-sm text-stone-100 transition hover:border-amber-200/28 hover:bg-[linear-gradient(180deg,rgba(255,240,210,0.08),rgba(255,255,255,0.03))]"
                         >
