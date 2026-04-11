@@ -1,7 +1,7 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { cn } from "@/lib/cn";
 import {
   canContinueScene,
@@ -21,6 +21,8 @@ import type {
   EventScene,
   HistoricalEvent,
 } from "@/types/content";
+
+const AI_INITIAL_SCENE_ID = "arrival-1";
 
 type HongmenAiStoryPlayerProps = {
   eventItem: HistoricalEvent;
@@ -43,6 +45,23 @@ type HongmenAiSceneApiResponse = {
   source: "ai" | "fallback-local";
   warning?: string;
   error?: string;
+  debug?: {
+    requestId?: string;
+    timings?: Record<string, number | undefined>;
+    metrics?: Record<string, string | number | undefined>;
+    upstreamStatus?: number;
+    upstreamStatusText?: string;
+  };
+};
+
+type ClientTriggerSource = "initial" | "continue" | "choice" | "reset";
+
+type PendingClientTrace = {
+  requestId: string;
+  sceneId: string;
+  triggerSource: ClientTriggerSource;
+  startedAt: number;
+  requestCountForScene: number;
 };
 
 export function HongmenAiStoryPlayer({
@@ -60,10 +79,15 @@ export function HongmenAiStoryPlayer({
   );
   const [generatedScenes, setGeneratedScenes] = useState<Record<string, EventScene>>({});
   const [sceneOrder, setSceneOrder] = useState<string[]>([]);
-  const [currentSceneId, setCurrentSceneId] = useState(playableContent.initialSceneId);
+  const [currentSceneId, setCurrentSceneId] = useState(AI_INITIAL_SCENE_ID);
   const [choices, setChoices] = useState<Record<string, EventChoice>>({});
-  const [statusMessage, setStatusMessage] = useState<string>("");
+  const [statusMessage, setStatusMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const initialRequestStartedRef = useRef(false);
+  const inFlightSceneIdsRef = useRef(new Set<string>());
+  const sceneRequestCountsRef = useRef<Record<string, number>>({});
+  const requestSequenceRef = useRef(0);
+  const pendingRenderTraceRef = useRef<Record<string, PendingClientTrace>>({});
 
   const currentScene = generatedScenes[currentSceneId] ?? null;
 
@@ -76,19 +100,47 @@ export function HongmenAiStoryPlayer({
   );
 
   useEffect(() => {
-    void requestScene(playableContent.initialSceneId);
+    if (initialRequestStartedRef.current) {
+      return;
+    }
+
+    initialRequestStartedRef.current = true;
+    void requestScene(AI_INITIAL_SCENE_ID, "initial");
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [playableContent.initialSceneId]);
+  }, []);
+
+  useEffect(() => {
+    if (!currentScene) {
+      return;
+    }
+
+    const trace = pendingRenderTraceRef.current[currentScene.sceneId];
+    if (!trace) {
+      return;
+    }
+
+    const requestId = trace.requestId;
+    requestAnimationFrame(() => {
+      const totalClientMs = Number((performance.now() - trace.startedAt).toFixed(1));
+      console.info("[hongmen-ai][client-render]", {
+        requestId,
+        sceneId: currentScene.sceneId,
+        triggerSource: trace.triggerSource,
+        requestCountForScene: trace.requestCountForScene,
+        clientTotalMs: totalClientMs,
+      });
+      delete pendingRenderTraceRef.current[currentScene.sceneId];
+    });
+  }, [currentScene]);
 
   if (!selectedViewpoint) {
     return null;
   }
 
   const currentChoice = currentScene ? choices[currentScene.sceneId] : undefined;
-  const nextSceneId = currentScene
-    ? resolveSceneNextId(currentScene, currentChoice)
-    : null;
-  const isFinished = !!currentScene && !nextSceneId;
+  const isAwaitingChoice = currentScene?.type === "decision" && !currentChoice;
+  const nextSceneId = currentScene ? resolveSceneNextId(currentScene, currentChoice) : null;
+  const isFinished = !!currentScene && !isLoading && !isAwaitingChoice && !nextSceneId;
   const resolvedBackground = currentScene
     ? resolveSceneBackground(playableContent, currentScene)
     : playableContent.defaultBackdrop;
@@ -107,6 +159,7 @@ export function HongmenAiStoryPlayer({
   };
   const showSpeakerName = currentScene ? shouldShowSpeakerName(currentScene) : false;
   const showStandee = !!resolvedStandee;
+  const isInitialLoading = isLoading && !currentScene && sceneOrder.length === 0;
 
   function buildHistory(): SceneHistoryEntry[] {
     return generatedSceneList.map((scene) => {
@@ -123,7 +176,25 @@ export function HongmenAiStoryPlayer({
     });
   }
 
-  async function requestScene(sceneId: string) {
+  function getLocalFallbackScene(sceneId: string) {
+    const fallbackSceneId = sceneId.replace(/-\d+$/, "");
+    const fallbackScene =
+      fallbackSceneMap[fallbackSceneId] ?? fallbackSceneMap[playableContent.initialSceneId];
+
+    if (!fallbackScene) {
+      return null;
+    }
+
+    return {
+      ...fallbackScene,
+      sceneId,
+    };
+  }
+
+  async function requestScene(
+    sceneId: string,
+    triggerSource: ClientTriggerSource = "continue",
+  ) {
     if (!sceneId) {
       return;
     }
@@ -133,6 +204,37 @@ export function HongmenAiStoryPlayer({
       return;
     }
 
+    if (inFlightSceneIdsRef.current.has(sceneId)) {
+      console.info("[hongmen-ai][client-trigger]", {
+        sceneId,
+        triggerSource,
+        deduped: true,
+      });
+      return;
+    }
+
+    sceneRequestCountsRef.current[sceneId] =
+      (sceneRequestCountsRef.current[sceneId] ?? 0) + 1;
+    const requestCountForScene = sceneRequestCountsRef.current[sceneId];
+    const clientRequestId = `${sceneId}-${Date.now()}-${++requestSequenceRef.current}`;
+    const startedAt = performance.now();
+    pendingRenderTraceRef.current[sceneId] = {
+      requestId: clientRequestId,
+      sceneId,
+      triggerSource,
+      startedAt,
+      requestCountForScene,
+    };
+
+    console.info("[hongmen-ai][client-trigger]", {
+      requestId: clientRequestId,
+      sceneId,
+      triggerSource,
+      historyCount: buildHistory().length,
+      requestCountForScene,
+    });
+
+    inFlightSceneIdsRef.current.add(sceneId);
     setIsLoading(true);
     setStatusMessage("");
 
@@ -147,6 +249,10 @@ export function HongmenAiStoryPlayer({
           viewpointId: selectedViewpoint.id,
           requestedSceneId: sceneId,
           history: buildHistory(),
+          clientRequestId,
+          triggerSource,
+          clientTriggeredAtMs: Date.now(),
+          clientRequestCountForScene: requestCountForScene,
         }),
       });
 
@@ -155,7 +261,15 @@ export function HongmenAiStoryPlayer({
       }
 
       const payload = (await response.json()) as HongmenAiSceneApiResponse;
-      const nextScene = payload.scene ?? fallbackSceneMap[sceneId];
+      console.info("[hongmen-ai][client-response]", {
+        requestId: clientRequestId,
+        sceneId,
+        triggerSource,
+        networkMs: Number((performance.now() - startedAt).toFixed(1)),
+        source: payload.source,
+        debug: payload.debug,
+      });
+      const nextScene = payload.scene ?? getLocalFallbackScene(sceneId);
 
       if (!nextScene) {
         throw new Error("AI response did not include a usable scene.");
@@ -171,15 +285,24 @@ export function HongmenAiStoryPlayer({
       setCurrentSceneId(sceneId);
 
       if (payload.source === "fallback-local") {
-        setStatusMessage(payload.warning ?? "AI 生成失败，已切回本地剧情。");
+        setStatusMessage(payload.warning ?? "AI 当前一幕生成失败，已切回本地剧情。");
       } else if (payload.warning) {
         setStatusMessage(payload.warning);
       }
     } catch {
-      const fallbackScene = fallbackSceneMap[sceneId];
+      console.warn("[hongmen-ai][client-response]", {
+        requestId: clientRequestId,
+        sceneId,
+        triggerSource,
+        networkMs: Number((performance.now() - startedAt).toFixed(1)),
+        source: "fetch-error",
+      });
+      const fallbackScene = getLocalFallbackScene(sceneId);
       if (!fallbackScene) {
-        setStatusMessage("当前一幕生成失败，请重开剧情后再试。");
+        setStatusMessage("当前这一幕生成失败，请重开剧情后再试。");
         setIsLoading(false);
+        inFlightSceneIdsRef.current.delete(sceneId);
+        delete pendingRenderTraceRef.current[sceneId];
         return;
       }
 
@@ -193,17 +316,19 @@ export function HongmenAiStoryPlayer({
       setCurrentSceneId(sceneId);
       setStatusMessage("接口请求失败，已切回本地剧情。");
     } finally {
+      inFlightSceneIdsRef.current.delete(sceneId);
       setIsLoading(false);
     }
   }
 
   function resetStory() {
+    inFlightSceneIdsRef.current.clear();
     setGeneratedScenes({});
     setSceneOrder([]);
     setChoices({});
-    setCurrentSceneId(playableContent.initialSceneId);
+    setCurrentSceneId(AI_INITIAL_SCENE_ID);
     setStatusMessage("");
-    void requestScene(playableContent.initialSceneId);
+    void requestScene(AI_INITIAL_SCENE_ID, "reset");
   }
 
   function handleChoice(sceneId: string, choice: EventChoice) {
@@ -215,7 +340,7 @@ export function HongmenAiStoryPlayer({
     const scene = generatedScenes[sceneId] ?? fallbackSceneMap[sceneId];
     const targetSceneId = scene ? resolveSceneNextId(scene, choice) : null;
     if (targetSceneId) {
-      void requestScene(targetSceneId);
+      void requestScene(targetSceneId, "choice");
     }
   }
 
@@ -229,7 +354,7 @@ export function HongmenAiStoryPlayer({
     }
 
     if (nextSceneId) {
-      void requestScene(nextSceneId);
+      void requestScene(nextSceneId, "continue");
     }
   }
 
@@ -287,11 +412,9 @@ export function HongmenAiStoryPlayer({
       speakerBadge={
         showSpeakerName ? (
           <div className="inline-flex rounded-[16px] border border-amber-200/18 bg-amber-100/8 px-4 py-2">
-              <p className="font-display text-lg text-amber-50 md:text-xl">
-              {currentScene?.speaker}
-              </p>
-            </div>
-          ) : undefined
+            <p className="font-display text-lg text-amber-50 md:text-xl">{currentScene?.speaker}</p>
+          </div>
+        ) : undefined
       }
       onContinue={continueStory}
       footer={
@@ -336,17 +459,15 @@ export function HongmenAiStoryPlayer({
             isFinished={isFinished}
             finishedText="这一轮事件体验已结束。"
             continueLabel={isLoading ? "生成中" : "继续"}
-            showContinueHint={
-              !isLoading && !(currentScene?.type === "decision" && !currentChoice)
-            }
+            showContinueHint={!isLoading && !isAwaitingChoice && !isFinished}
           />
         </>
       }
     >
       <p className="min-h-[110px] text-base leading-8 text-stone-100 md:min-h-[128px] md:text-lg">
-        {isLoading && !currentScene
-          ? "正在生成当前一幕……"
-          : currentScene?.text ?? "当前一幕暂时无法载入。"}
+        {isInitialLoading
+          ? "正在生成开场……"
+          : currentScene?.text ?? "当前这一幕暂时无法载入。"}
       </p>
 
       {currentChoice ? (

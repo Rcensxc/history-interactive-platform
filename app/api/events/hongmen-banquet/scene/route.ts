@@ -7,6 +7,7 @@ import {
 } from "@/lib/hongmen-ai";
 
 export async function POST(request: Request) {
+  const routeStart = performance.now();
   let payload: HongmenAiSceneRequest | null = null;
 
   try {
@@ -37,6 +38,25 @@ export async function POST(request: Request) {
     );
   }
 
+  const routeAfterPayloadMs = Number((performance.now() - routeStart).toFixed(1));
   const result = await generateHongmenAiScene(payload);
+  const routeBeforeResponseMs = Number((performance.now() - routeStart).toFixed(1));
+  if (result.debug) {
+    result.debug.timings = {
+      ...result.debug.timings,
+      routePayloadParsedMs: routeAfterPayloadMs,
+      routeTotalMs: routeBeforeResponseMs,
+    };
+  }
+
+  console.info("[hongmen-ai][route]", {
+    requestId: result.debug?.requestId ?? payload.clientRequestId ?? "unknown",
+    sceneId: payload.requestedSceneId,
+    triggerSource: payload.triggerSource ?? "unknown",
+    timings: result.debug?.timings,
+    metrics: result.debug?.metrics,
+    source: result.source,
+    ok: result.ok,
+  });
   return NextResponse.json(result);
 }
