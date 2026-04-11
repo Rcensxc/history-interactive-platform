@@ -6,27 +6,24 @@ import { cn } from "@/lib/cn";
 import { Panel } from "@/components/ui/panel";
 import { PlaceholderArt } from "@/components/ui/placeholder-art";
 import { SectionTitle } from "@/components/ui/section-title";
-import type {
-  EventPlayableContent,
-  HistoricalEvent,
-} from "@/types/content";
+import type { EventPreparationData } from "@/types/content";
 
 type EventPreparationProps = {
-  eventItem: HistoricalEvent;
-  playableContent: EventPlayableContent | null;
+  preparationData: EventPreparationData | null;
   initialViewpointId?: string;
   preferredFigureName?: string;
   preferredFigureSelectable?: boolean;
 };
 
 export function EventPreparation({
-  eventItem,
-  playableContent,
+  preparationData,
   initialViewpointId,
   preferredFigureName,
   preferredFigureSelectable = false,
 }: EventPreparationProps) {
-  const viewpoints = playableContent?.viewpoints ?? [];
+  const eventItem = preparationData?.event ?? null;
+  const viewpoints = preparationData?.viewpoints ?? [];
+  const hasPlayableStory = preparationData?.hasPlayableStory ?? false;
   const defaultViewpointId = viewpoints.some(
     (viewpoint) => viewpoint.id === initialViewpointId,
   )
@@ -34,11 +31,15 @@ export function EventPreparation({
     : viewpoints[0]?.id ?? "";
   const [selectedViewpointId, setSelectedViewpointId] = useState(defaultViewpointId);
 
+  if (!eventItem) {
+    return null;
+  }
+
   const selectedViewpoint =
     viewpoints.find((viewpoint) => viewpoint.id === selectedViewpointId) ??
     viewpoints[0] ??
     null;
-  const isPlayable = eventItem.status === "playable" && !!selectedViewpoint;
+  const isPlayable = hasPlayableStory && !!selectedViewpoint;
 
   return (
     <div className="mx-auto max-w-7xl px-6 py-10 md:px-8 md:py-14">
@@ -78,7 +79,7 @@ export function EventPreparation({
                   <div className="mt-4 space-y-4 text-sm leading-7 text-stone-200">
                     <p>{eventItem.statusLabel}</p>
                     <p>类型：{eventItem.category}</p>
-                    <p>可选视角：{eventItem.availableViewpointIds.length} 位</p>
+                    <p>可选视角：{viewpoints.length} 位</p>
                     <p>正式剧情页将继续复用现有 AVG 沉浸式舞台。</p>
                   </div>
                 </div>

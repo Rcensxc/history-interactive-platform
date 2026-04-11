@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { cn } from "@/lib/cn";
 import type {
   EventChoice,
@@ -22,6 +22,12 @@ export function EventStoryPlayer({
   initialViewpointId,
 }: EventStoryPlayerProps) {
   const viewpoints = playableContent.viewpoints;
+  const scenes = playableContent.scenes;
+  const sceneMap = useMemo(
+    () => Object.fromEntries(scenes.map((scene) => [scene.id, scene])),
+    [scenes],
+  );
+  const firstSceneId = playableContent.initialSceneId ?? scenes[0]?.id ?? "";
   const initialSelectedViewpointId = viewpoints.some(
     (viewpoint) => viewpoint.id === initialViewpointId,
   )
@@ -30,35 +36,37 @@ export function EventStoryPlayer({
   const [selectedViewpointId, setSelectedViewpointId] = useState(
     initialSelectedViewpointId,
   );
-  const [progress, setProgress] = useState(1);
+  const [currentSceneId, setCurrentSceneId] = useState(firstSceneId);
   const [choices, setChoices] = useState<Record<string, EventChoice>>({});
 
   const selectedViewpoint =
     viewpoints.find((viewpoint) => viewpoint.id === selectedViewpointId) ??
     viewpoints[0] ??
     null;
-  const currentScene =
-    playableContent.scenes[
-      Math.min(progress - 1, Math.max(playableContent.scenes.length - 1, 0))
-    ] ?? null;
+  const currentScene = sceneMap[currentSceneId] ?? scenes[0] ?? null;
 
   if (!selectedViewpoint || !currentScene) {
     return null;
   }
 
-  const isFinished = progress >= playableContent.scenes.length;
   const currentChoice = choices[currentScene.id];
+  const nextSceneId =
+    currentChoice?.nextSceneId ?? currentScene.nextSceneId ?? null;
+  const isFinished = !nextSceneId;
   const activeVisual =
-    playableContent.speakerVisuals[currentScene.speaker] ?? {
+    playableContent.speakerVisuals[
+      currentScene.visualKey ?? currentScene.speakerId ?? currentScene.speaker
+    ] ?? {
       label: selectedViewpoint.portraitLabel,
       tone: selectedViewpoint.portraitTone,
       subtitle: selectedViewpoint.title,
       alignment: "center" as const,
     };
-  const showSpeakerName = currentScene.speaker !== "旁白";
+  const showSpeakerName =
+    currentScene.type !== "narration" && currentScene.speaker !== "旁白";
   const showStandee =
     currentScene.type === "dialogue" &&
-    currentScene.speaker !== selectedViewpoint.name &&
+    (currentScene.speakerId ?? currentScene.speaker) !== selectedViewpoint.id &&
     currentScene.speaker !== "旁白";
 
   const resetStory = (viewpoint?: EventViewpoint) => {
@@ -66,7 +74,7 @@ export function EventStoryPlayer({
       setSelectedViewpointId(viewpoint.id);
     }
 
-    setProgress(1);
+    setCurrentSceneId(firstSceneId);
     setChoices({});
   };
 
@@ -75,9 +83,11 @@ export function EventStoryPlayer({
       ...current,
       [sceneId]: choice,
     }));
-    setProgress((current) =>
-      Math.min(current + 1, playableContent.scenes.length),
-    );
+
+    const targetSceneId = choice.nextSceneId ?? currentScene.nextSceneId;
+    if (targetSceneId) {
+      setCurrentSceneId(targetSceneId);
+    }
   };
 
   const continueStory = () => {
@@ -89,9 +99,9 @@ export function EventStoryPlayer({
       return;
     }
 
-    setProgress((current) =>
-      Math.min(current + 1, playableContent.scenes.length),
-    );
+    if (nextSceneId) {
+      setCurrentSceneId(nextSceneId);
+    }
   };
 
   return (

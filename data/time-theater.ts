@@ -1,12 +1,7 @@
 import type { TimeTheaterLine, TimeTheaterTopic, Tone } from "@/types/content";
+import { timeTheaterEligibleFigureIds } from "@/data/history-registry";
 
-export const timeTheaterCastIds = [
-  "liubang",
-  "zhuge-liang",
-  "wuzetian",
-  "liqingzhao",
-  "wangyangming",
-];
+export const timeTheaterCastIds = timeTheaterEligibleFigureIds;
 
 export const defaultTimeTheaterSelection = [
   "liubang",

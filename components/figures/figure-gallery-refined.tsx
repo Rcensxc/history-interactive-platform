@@ -2,8 +2,10 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { historicalFigures } from "@/data/historical-figures";
-import { figureRelatedExperiences } from "@/data/figure-related-experiences";
+import {
+  figureRelatedExperiences,
+  historicalFigures,
+} from "@/data/history-registry";
 import { Panel } from "@/components/ui/panel";
 import { PlaceholderArt } from "@/components/ui/placeholder-art";
 import { cn } from "@/lib/cn";

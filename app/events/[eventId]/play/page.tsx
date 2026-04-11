@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { EventStoryPlayer } from "@/components/events/event-story-player";
-import { getHistoricalEvent, getEventPlayableContent } from "@/data/events";
+import {
+  getEventPlayableContent,
+  getHistoricalEvent,
+} from "@/data/history-registry";
 
 type PageProps = {
   params: Promise<{ eventId: string }>;
@@ -30,7 +33,7 @@ export default async function EventPlayPage({
   const eventItem = getHistoricalEvent(eventId);
   const playableContent = getEventPlayableContent(eventId);
 
-  if (!eventItem || eventItem.status !== "playable" || !playableContent) {
+  if (!eventItem || !eventItem.hasPlayableStory || !playableContent) {
     notFound();
   }
 

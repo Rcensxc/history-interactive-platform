@@ -6,7 +6,7 @@ import {
   hongmenScenes,
   hongmenSpeakerVisuals,
   hongmenStageMeta,
-} from "@/data/hongmen-banquet";
+} from "@/data/history-registry";
 import { cn } from "@/lib/cn";
 import { Panel } from "@/components/ui/panel";
 import { PlaceholderArt } from "@/components/ui/placeholder-art";

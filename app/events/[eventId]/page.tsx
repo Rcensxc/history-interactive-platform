@@ -1,8 +1,11 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { EventPreparation } from "@/components/events/event-preparation";
-import { getHistoricalEvent, getEventPlayableContent } from "@/data/events";
-import { historicalFigures } from "@/data/historical-figures";
+import {
+  getEventPreparationData,
+  getHistoricalFigure,
+  getHistoricalEvent,
+} from "@/data/history-registry";
 
 type PageProps = {
   params: Promise<{ eventId: string }>;
@@ -35,21 +38,19 @@ export default async function EventPreparationPage({
     notFound();
   }
 
-  const playableContent = getEventPlayableContent(eventId);
+  const preparationData = getEventPreparationData(eventId);
   const preferredFigure =
-    historicalFigures.find((figure) => figure.id === query.fromFigure) ??
-    historicalFigures.find((figure) => figure.id === query.viewpoint) ??
-    null;
+    (query.fromFigure ? getHistoricalFigure(query.fromFigure) : null) ??
+    (query.viewpoint ? getHistoricalFigure(query.viewpoint) : null);
   const preferredFigureSelectable =
     !!query.viewpoint &&
-    !!playableContent?.viewpoints.some(
+    !!preparationData?.viewpoints.some(
       (viewpoint) => viewpoint.id === query.viewpoint,
     );
 
   return (
     <EventPreparation
-      eventItem={eventItem}
-      playableContent={playableContent}
+      preparationData={preparationData}
       initialViewpointId={query.viewpoint}
       preferredFigureName={preferredFigure?.name}
       preferredFigureSelectable={preferredFigureSelectable}
