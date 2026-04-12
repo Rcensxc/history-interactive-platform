@@ -2,95 +2,39 @@
   getEventPlayableContent,
   getHistoricalEvent,
 } from "@/data/history-registry";
-import { adaptAiStructuredStoryToPlayableContent } from "@/lib/ai-scene-adapter";
-import { validateAiStructuredStoryOutput } from "@/lib/story-protocol-validation";
 import type {
-  AiStructuredSceneNode,
-  AiStructuredStoryOutput,
   EventPlayableContent,
   EventScene,
+  EventSceneStandee,
   EventViewpoint,
+  HongmenAiScriptLine,
+  HongmenAiScriptPackage,
   PlaceholderAsset,
 } from "@/types/content";
 
 export const HONGMEN_AI_EVENT_ID = "hongmen-banquet";
 export const HONGMEN_AI_VIEWPOINT_ID = "liubang";
-export const HONGMEN_AI_INITIAL_SCENE_ID = "arrival-1";
 
 const HONGMEN_AI_DEFAULT_MODEL = "openai/gpt-4o-mini";
-const HONGMEN_SCENE_ID_PATTERN =
-  /^(arrival|opening-dialogue|decision-one|fan-kuai-entry|decision-two|ending)(?:-(\d+))?$/;
-const HONGMEN_SCENE_RETRY_LIMIT = 2;
+const HONGMEN_AI_SCRIPT_PROTOCOL_VERSION = "hongmen-linear-script-v1" as const;
 
 type HongmenBeatId =
   | "arrival"
-  | "opening-dialogue"
-  | "decision-one"
+  | "banquet-probe"
+  | "pressure-rise"
   | "fan-kuai-entry"
-  | "decision-two"
+  | "exit"
   | "ending";
 
 type HongmenBeatBlueprint = {
   beatId: HongmenBeatId;
-  fallbackSceneId: string;
-  sceneType: "narration" | "dialogue" | "decision";
+  title: string;
   dramaticGoal: string;
   backgroundTag: keyof typeof hongmenAiBackdropMap;
+  minLines: number;
+  maxLines: number;
+  allowNarration: boolean;
   allowedSpeakers: string[];
-  suggestedSpeaker: string;
-  showStandee: boolean;
-  suggestedStandeeKey: string;
-  minScenes: number;
-  maxScenes: number;
-  nextBeatId?: HongmenBeatId;
-  choiceBlueprints?: Array<{
-    id: string;
-    label: string;
-    isHistorical?: boolean;
-    nextBeatId: HongmenBeatId;
-  }>;
-};
-
-type HongmenSceneTarget = {
-  rawSceneId: string;
-  beatId: HongmenBeatId;
-  step: number;
-  blueprint: HongmenBeatBlueprint;
-};
-
-type HongmenAiHistoryEntry = {
-  sceneId: string;
-  speaker: string;
-  text: string;
-  type: EventScene["type"];
-  selectedChoiceId?: string;
-  selectedChoiceLabel?: string;
-};
-
-type HongmenSceneValidationResult = {
-  ok: boolean;
-  errors: string[];
-  warnings: string[];
-};
-
-export type HongmenAiSceneRequest = {
-  eventId: string;
-  viewpointId: string;
-  requestedSceneId: string;
-  history: HongmenAiHistoryEntry[];
-  clientRequestId?: string;
-  triggerSource?: "initial" | "continue" | "choice" | "reset";
-  clientTriggeredAtMs?: number;
-  clientRequestCountForScene?: number;
-};
-
-export type HongmenAiSceneResponse = {
-  ok: boolean;
-  scene: EventScene;
-  source: "ai" | "fallback-local";
-  warning?: string;
-  error?: string;
-  debug?: HongmenAiDebugInfo;
 };
 
 type HongmenAiDebugInfo = {
@@ -123,12 +67,39 @@ type HongmenAiDebugInfo = {
     upstreamOutputLength: number;
     retryCount: number;
     upstreamCallCount: number;
-    clientRequestCountForScene?: number;
+    packageRequestCount?: number;
+    packageBeatCount?: number;
+    packageLineCount?: number;
     triggerSource?: string;
   };
   upstreamStatus?: number;
   upstreamStatusText?: string;
   upstreamBody?: string;
+};
+
+export type HongmenAiStoryPackageRequest = {
+  eventId: string;
+  viewpointId: string;
+  clientRequestId?: string;
+  triggerSource?: "initial" | "reset";
+  clientTriggeredAtMs?: number;
+  packageRequestCount?: number;
+};
+
+export type HongmenAiStoryPackageResponse = {
+  ok: boolean;
+  scriptPackage?: HongmenAiScriptPackage;
+  playableContent: EventPlayableContent;
+  source: "ai" | "fallback-local";
+  warning?: string;
+  error?: string;
+  debug?: HongmenAiDebugInfo;
+};
+
+type HongmenScriptValidationResult = {
+  ok: boolean;
+  errors: string[];
+  warnings: string[];
 };
 
 const hongmenAiBackdropMap = {
@@ -154,132 +125,74 @@ const hongmenAiBackdropMap = {
   },
 } as const satisfies Record<string, PlaceholderAsset>;
 
-const hongmenSpeakerKeyMap = {
-  刘邦: "liubang",
+const hongmenSpeakerVisualKeyMap = {
   项羽: "xiangyu",
   项伯: "xiangbo",
   樊哙: "fan-kuai",
 } as const;
 
-const hongmenBeatBlueprints: Record<HongmenBeatId, HongmenBeatBlueprint> = {
-  arrival: {
+const hongmenBeatBlueprints: HongmenBeatBlueprint[] = [
+  {
     beatId: "arrival",
-    fallbackSceneId: "arrival",
-    sceneType: "narration",
-    dramaticGoal: "从刘邦第一视角建立入席前的警觉感，让玩家立刻感到这不是普通宴会。",
+    title: "入场与警觉",
+    dramaticGoal: "以刘邦第一视角建立赴宴时的不安和警觉。",
     backgroundTag: "camp-night",
+    minLines: 2,
+    maxLines: 3,
+    allowNarration: true,
     allowedSpeakers: [],
-    suggestedSpeaker: "",
-    showStandee: false,
-    suggestedStandeeKey: "",
-    minScenes: 1,
-    maxScenes: 2,
-    nextBeatId: "opening-dialogue",
   },
-  "opening-dialogue": {
-    beatId: "opening-dialogue",
-    fallbackSceneId: "opening-dialogue",
-    sceneType: "dialogue",
-    dramaticGoal: "让开局的试探更慢一点展开，先压低声势，再把真正的压力送到席面中央。",
+  {
+    beatId: "banquet-probe",
+    title: "席间试探",
+    dramaticGoal: "席间礼数仍在，但试探已经开始压上来。",
     backgroundTag: "banquet-seat",
+    minLines: 2,
+    maxLines: 4,
+    allowNarration: true,
     allowedSpeakers: ["项羽", "项伯"],
-    suggestedSpeaker: "项羽",
-    showStandee: true,
-    suggestedStandeeKey: "xiangyu",
-    minScenes: 2,
-    maxScenes: 3,
-    nextBeatId: "decision-one",
   },
-  "decision-one": {
-    beatId: "decision-one",
-    fallbackSceneId: "decision-one",
-    sceneType: "decision",
-    dramaticGoal: "让刘邦在宴席刚开局时做第一次姿态选择。",
+  {
+    beatId: "pressure-rise",
+    title: "压力升高",
+    dramaticGoal: "把宴席里的危险再往前推一层，让刘邦更明显感到受困。",
     backgroundTag: "banquet-seat",
-    allowedSpeakers: ["关键抉择"],
-    suggestedSpeaker: "关键抉择",
-    showStandee: false,
-    suggestedStandeeKey: "",
-    minScenes: 1,
-    maxScenes: 1,
-    choiceBlueprints: [
-      {
-        id: "historic-humble",
-        label: "主动示弱，把入关经过解释清楚",
-        isHistorical: true,
-        nextBeatId: "fan-kuai-entry",
-      },
-      {
-        id: "assertive",
-        label: "先稳住气势，强调自己并无二心",
-        nextBeatId: "fan-kuai-entry",
-      },
-      {
-        id: "silent",
-        label: "尽量少说，先观察席间每个人的反应",
-        nextBeatId: "fan-kuai-entry",
-      },
-    ],
+    minLines: 2,
+    maxLines: 3,
+    allowNarration: true,
+    allowedSpeakers: ["项羽", "项伯"],
   },
-  "fan-kuai-entry": {
+  {
     beatId: "fan-kuai-entry",
-    fallbackSceneId: "fan-kuai-entry",
-    sceneType: "dialogue",
-    dramaticGoal: "让樊哙闯入后的压迫感慢慢升高，不是一句就把局势带过。",
+    title: "樊哙闯入",
+    dramaticGoal: "让樊哙闯入后的张力迅速改变席间空气。",
     backgroundTag: "tent-entrance",
+    minLines: 2,
+    maxLines: 4,
+    allowNarration: true,
     allowedSpeakers: ["樊哙", "项羽"],
-    suggestedSpeaker: "樊哙",
-    showStandee: true,
-    suggestedStandeeKey: "fan-kuai",
-    minScenes: 2,
-    maxScenes: 3,
-    nextBeatId: "decision-two",
   },
-  "decision-two": {
-    beatId: "decision-two",
-    fallbackSceneId: "decision-two",
-    sceneType: "decision",
-    dramaticGoal: "在局势更重之后，逼刘邦做第二次生存判断。",
+  {
+    beatId: "exit",
+    title: "脱身离席",
+    dramaticGoal: "让脱身动作带着紧张感，但保持节制和可读性。",
     backgroundTag: "exit-shadow",
-    allowedSpeakers: ["关键抉择"],
-    suggestedSpeaker: "关键抉择",
-    showStandee: false,
-    suggestedStandeeKey: "",
-    minScenes: 1,
-    maxScenes: 1,
-    choiceBlueprints: [
-      {
-        id: "historic-exit",
-        label: "借上厕所离席，抓住空档退出营地",
-        isHistorical: true,
-        nextBeatId: "ending",
-      },
-      {
-        id: "stay",
-        label: "继续留席，试着把危险拖成表面平静",
-        nextBeatId: "ending",
-      },
-      {
-        id: "confront",
-        label: "把暗示挑明，逼对面先亮态度",
-        nextBeatId: "ending",
-      },
-    ],
+    minLines: 2,
+    maxLines: 3,
+    allowNarration: true,
+    allowedSpeakers: ["项伯"],
   },
-  ending: {
+  {
     beatId: "ending",
-    fallbackSceneId: "ending",
-    sceneType: "narration",
-    dramaticGoal: "用一小段收束，把鸿门宴最重要的危险感和试探感落下来。",
+    title: "结尾收束",
+    dramaticGoal: "用克制的方式收束这一轮鸿门宴体验，突出惊险余味。",
     backgroundTag: "exit-shadow",
+    minLines: 1,
+    maxLines: 2,
+    allowNarration: true,
     allowedSpeakers: [],
-    suggestedSpeaker: "",
-    showStandee: false,
-    suggestedStandeeKey: "",
-    minScenes: 1,
-    maxScenes: 1,
   },
-};
+];
 
 function getHongmenPlayableBase(): EventPlayableContent {
   const playableContent = getEventPlayableContent(HONGMEN_AI_EVENT_ID);
@@ -302,58 +215,8 @@ function getHongmenAiViewpoint(): EventViewpoint {
   return viewpoint;
 }
 
-function createHongmenSceneId(beatId: HongmenBeatId, step: number) {
-  return `${beatId}-${step}`;
-}
-
-function parseHongmenSceneTarget(sceneId: string): HongmenSceneTarget | null {
-  const matched = HONGMEN_SCENE_ID_PATTERN.exec(sceneId.trim());
-  if (!matched) {
-    return null;
-  }
-
-  const beatId = matched[1] as HongmenBeatId;
-  const step = Number(matched[2] ?? "1");
-  if (!Number.isFinite(step) || step < 1) {
-    return null;
-  }
-
-  return {
-    rawSceneId: sceneId.trim(),
-    beatId,
-    step,
-    blueprint: hongmenBeatBlueprints[beatId],
-  };
-}
-
-function getFallbackSceneForTarget(target: HongmenSceneTarget): EventScene {
-  const base = getHongmenPlayableBase();
-  const fallbackScene = base.scenes.find(
-    (scene) => scene.sceneId === target.blueprint.fallbackSceneId,
-  );
-
-  if (!fallbackScene) {
-    throw new Error(`Missing fallback scene for ${target.blueprint.fallbackSceneId}.`);
-  }
-
-  return {
-    ...fallbackScene,
-    sceneId: target.rawSceneId,
-  };
-}
-
-function getFallbackSceneForRequestedId(sceneId: string) {
-  const target = parseHongmenSceneTarget(sceneId);
-  if (!target) {
-    return getFallbackSceneForTarget({
-      rawSceneId: HONGMEN_AI_INITIAL_SCENE_ID,
-      beatId: "arrival",
-      step: 1,
-      blueprint: hongmenBeatBlueprints.arrival,
-    });
-  }
-
-  return getFallbackSceneForTarget(target);
+function getFallbackPlayableContent() {
+  return getHongmenPlayableBase();
 }
 
 function normalizeText(text: string) {
@@ -367,165 +230,6 @@ function normalizeText(text: string) {
 
 function createHongmenAiRequestId() {
   return `hongmen-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-}
-
-function getProgressionRules(target: HongmenSceneTarget) {
-  const { blueprint, step } = target;
-  if (blueprint.sceneType === "decision") {
-    return {
-      forcedNextSceneId: "",
-      allowedNextSceneIds: [] as string[],
-      choiceBlueprints:
-        blueprint.choiceBlueprints?.map((choice) => ({
-          ...choice,
-          nextSceneId: createHongmenSceneId(choice.nextBeatId, 1),
-        })) ?? [],
-    };
-  }
-
-  const sameBeatNextSceneId =
-    step < blueprint.maxScenes ? createHongmenSceneId(blueprint.beatId, step + 1) : null;
-  const nextBeatSceneId = blueprint.nextBeatId
-    ? createHongmenSceneId(blueprint.nextBeatId, 1)
-    : "";
-
-  if (step < blueprint.minScenes && sameBeatNextSceneId) {
-    return {
-      forcedNextSceneId: sameBeatNextSceneId,
-      allowedNextSceneIds: [sameBeatNextSceneId],
-      choiceBlueprints: [] as Array<{
-        id: string;
-        label: string;
-        isHistorical?: boolean;
-        nextBeatId: HongmenBeatId;
-        nextSceneId: string;
-      }>,
-    };
-  }
-
-  if (step >= blueprint.maxScenes) {
-    return {
-      forcedNextSceneId: nextBeatSceneId,
-      allowedNextSceneIds: nextBeatSceneId ? [nextBeatSceneId] : [],
-      choiceBlueprints: [] as Array<{
-        id: string;
-        label: string;
-        isHistorical?: boolean;
-        nextBeatId: HongmenBeatId;
-        nextSceneId: string;
-      }>,
-    };
-  }
-
-  return {
-    forcedNextSceneId: null as string | null,
-    allowedNextSceneIds: [sameBeatNextSceneId, nextBeatSceneId].filter(
-      (value): value is string => Boolean(value),
-    ),
-    choiceBlueprints: [] as Array<{
-      id: string;
-      label: string;
-      isHistorical?: boolean;
-      nextBeatId: HongmenBeatId;
-      nextSceneId: string;
-    }>,
-  };
-}
-
-function buildHistorySummary(history: HongmenAiHistoryEntry[]) {
-  if (history.length === 0) {
-    return "None. This is the opening scene.";
-  }
-
-  return history
-    .slice(-6)
-    .map((entry, index) => {
-      const choiceText = entry.selectedChoiceLabel
-        ? ` | selected choice: ${entry.selectedChoiceLabel}`
-        : "";
-
-      return `${index + 1}. [${entry.sceneId}] (${entry.type}) ${entry.speaker || "旁白"}: ${entry.text}${choiceText}`;
-    })
-    .join("\n");
-}
-
-function buildHongmenScenePrompt(
-  params: HongmenAiSceneRequest,
-  target: HongmenSceneTarget,
-  correctionNote?: string,
-) {
-  const viewpoint = getHongmenAiViewpoint();
-  const eventItem = getHistoricalEvent(HONGMEN_AI_EVENT_ID);
-  if (!eventItem) {
-    throw new Error("Missing hongmen event.");
-  }
-
-  const progression = getProgressionRules(target);
-  const historySummary = buildHistorySummary(params.history);
-  const systemPrompt = [
-    "You generate one structured scene node for a Chinese historical AVG experience.",
-    "Output only strict JSON that follows the provided schema.",
-    "Write all scene text in Simplified Chinese.",
-    "Do not output layout, UI, CSS, camera language, file paths, or asset filenames.",
-    "This event is 鸿门宴 and the fixed first-person viewpoint is 刘邦.",
-    "Keep the tone tense, restrained, and readable for general users.",
-    "Narration rules:",
-    "- narration is only Liu Bang's first-person observation or feeling.",
-    "- no quoted dialogue in narration.",
-    "- keep narration short, around 2 to 3 short lines.",
-    "Dialogue rules:",
-    "- dialogue contains only one character speaking.",
-    "- no narration, no stage directions, no crowd reaction, no third-person description.",
-    "- if the line would become too long, split the moment into another dialogue scene instead of stuffing everything into one box.",
-    "Decision rules:",
-    "- decision only explains the current situation briefly and then provides 3 choices.",
-    "- do not include ending language or wrap-up text inside decision scenes.",
-    "- top-level nextSceneId for decision must be an empty string.",
-    "If the current speaker is Liu Bang himself, prefer showStandee=false to preserve first-person immersion.",
-  ].join("\n");
-
-  const progressionPrompt =
-    target.blueprint.sceneType === "decision"
-      ? progression.choiceBlueprints
-          .map(
-            (choice) =>
-              `- id=${choice.id} | label=${choice.label} | isHistorical=${choice.isHistorical ? "true" : "false"} | nextSceneId=${choice.nextSceneId}`,
-          )
-          .join("\n")
-      : progression.forcedNextSceneId
-        ? `This scene must continue to nextSceneId=${progression.forcedNextSceneId}.`
-        : `Allowed nextSceneId values: ${progression.allowedNextSceneIds.join(", ")}.`;
-
-  const userPrompt = [
-    `Event title: ${eventItem.title}`,
-    `Event summary: ${eventItem.description}`,
-    `Fixed viewpoint: ${viewpoint.name}`,
-    `Viewpoint note: ${viewpoint.summary}`,
-    `Requested sceneId: ${target.rawSceneId}`,
-    `Current beatId: ${target.beatId}`,
-    `Current beat step: ${target.step}`,
-    `Beat target type: ${target.blueprint.sceneType}`,
-    `Beat dramatic goal: ${target.blueprint.dramaticGoal}`,
-    `Required backgroundTag: ${target.blueprint.backgroundTag}`,
-    `Allowed speakers: ${target.blueprint.allowedSpeakers.join(" / ") || "(empty string only)"}`,
-    `Suggested speaker: ${target.blueprint.suggestedSpeaker || "(empty string)"}`,
-    `Suggested showStandee: ${target.blueprint.showStandee ? "true" : "false"}`,
-    `Suggested standeeKey: ${target.blueprint.suggestedStandeeKey || "(empty string)"}`,
-    `Beat pacing: minScenes=${target.blueprint.minScenes}, maxScenes=${target.blueprint.maxScenes}`,
-    `Progression rule:\n${progressionPrompt}`,
-    `Allowed backgroundTag values: ${Object.keys(hongmenAiBackdropMap).join(", ")}`,
-    "Allowed standeeKey values: xiangyu, fan-kuai, xiangbo, liubang, narration, decision, ending, or empty string.",
-    `Generated history so far:\n${historySummary}`,
-    correctionNote ? `Correction note for this retry:\n${correctionNote}` : "",
-  ]
-    .filter(Boolean)
-    .join("\n\n");
-
-  return {
-    systemPrompt,
-    userPrompt,
-    historySummary,
-  };
 }
 
 function getOpenAiConfig() {
@@ -637,14 +341,85 @@ function extractResponseText(payload: unknown) {
   return "";
 }
 
-async function requestStructuredHongmenScene(params: {
-  request: HongmenAiSceneRequest;
-  target: HongmenSceneTarget;
+function serializeBeatBlueprints() {
+  return hongmenBeatBlueprints
+    .map((beat) => {
+      const speakerRule =
+        beat.allowedSpeakers.length > 0
+          ? beat.allowedSpeakers.join(" / ")
+          : "(only narration with empty speaker)";
+
+      return [
+        `- beatId=${beat.beatId}`,
+        `title=${beat.title}`,
+        `goal=${beat.dramaticGoal}`,
+        `lineRange=${beat.minLines}-${beat.maxLines}`,
+        `allowNarration=${beat.allowNarration ? "true" : "false"}`,
+        `allowedSpeakers=${speakerRule}`,
+        `backgroundHandledLocally=${beat.backgroundTag}`,
+      ].join(" | ");
+    })
+    .join("\n");
+}
+
+function buildHongmenStoryPackagePrompt(
+  params: HongmenAiStoryPackageRequest,
+) {
+  const viewpoint = getHongmenAiViewpoint();
+  const eventItem = getHistoricalEvent(HONGMEN_AI_EVENT_ID);
+
+  if (!eventItem) {
+    throw new Error("Missing hongmen event.");
+  }
+
+  const systemPrompt = [
+    "You generate one fixed-route script package for a Chinese historical AVG experience.",
+    "Output only strict JSON that follows the provided schema.",
+    "Write all text in Simplified Chinese.",
+    "Do not output layout, UI, CSS, camera language, file paths, asset filenames, choices, nextSceneId, backgroundTag, standeeKey, or state updates.",
+    "The event is 鸿门宴 and the fixed first-person viewpoint is 刘邦.",
+    "This is a single linear route with no player branching.",
+    "Keep the tone tense, restrained, natural, and readable for general users.",
+    "Narration rules:",
+    "- narration uses empty speaker.",
+    "- narration is only Liu Bang's first-person feeling or observation.",
+    "- no quoted dialogue in narration.",
+    "- each narration line should be short but complete, not a fragment or abstract hint.",
+    "- narration should usually contain some environment sense, situation pressure, or inner feeling.",
+    "- a natural target is around 35 to 80 Chinese characters, usually one or two sentences or two to three short lines.",
+    "Dialogue rules:",
+    "- each line contains only one speaker talking.",
+    "- no narration, no action description, no crowd reaction, no third-person summary.",
+    "- each dialogue line should be short but feel like one complete spoken sentence, not a label or outline.",
+    "- a natural target is around 18 to 45 Chinese characters.",
+    "- if a speaker needs more words, split into multiple short but complete lines.",
+    "Return all beats in the fixed order exactly once.",
+  ].join("\n");
+
+  const userPrompt = [
+    `Event title: ${eventItem.title}`,
+    `Event summary: ${eventItem.description}`,
+    `Fixed viewpoint: ${viewpoint.name}`,
+    `Viewpoint note: ${viewpoint.summary}`,
+    `Required protocolVersion: ${HONGMEN_AI_SCRIPT_PROTOCOL_VERSION}`,
+    `Required viewpointId: ${HONGMEN_AI_VIEWPOINT_ID}`,
+    `Required beat plan:\n${serializeBeatBlueprints()}`,
+    `Client trigger source: ${params.triggerSource ?? "initial"}`,
+    "The program controls background switches, standee choice, scene progression, and ending locally.",
+    "Do not omit any beat.",
+  ].join("\n\n");
+
+  return {
+    systemPrompt,
+    userPrompt,
+  };
+}
+
+async function requestStructuredHongmenScriptPackage(params: {
+  request: HongmenAiStoryPackageRequest;
   requestId: string;
-  retryCount: number;
-  correctionNote?: string;
 }): Promise<{
-  scene: AiStructuredSceneNode;
+  scriptPackage: HongmenAiScriptPackage;
   debug: HongmenAiDebugInfo;
 }> {
   const config = getOpenAiConfig();
@@ -658,19 +433,14 @@ async function requestStructuredHongmenScene(params: {
   }
 
   const promptStart = performance.now();
-  const { systemPrompt, userPrompt, historySummary } = buildHongmenScenePrompt(
-    params.request,
-    params.target,
-    params.correctionNote,
-  );
+  const { systemPrompt, userPrompt } = buildHongmenStoryPackagePrompt(params.request);
   debug.requestId = params.requestId;
-  debug.metrics.historyCount = params.request.history.length;
-  debug.metrics.historySummaryLength = historySummary.length;
   debug.metrics.systemPromptLength = systemPrompt.length;
   debug.metrics.userPromptLength = userPrompt.length;
-  debug.metrics.retryCount = params.retryCount;
-  debug.metrics.upstreamCallCount = params.retryCount + 1;
-  debug.metrics.clientRequestCountForScene = params.request.clientRequestCountForScene;
+  debug.metrics.retryCount = 0;
+  debug.metrics.upstreamCallCount = 1;
+  debug.metrics.packageRequestCount = params.request.packageRequestCount;
+  debug.metrics.packageBeatCount = hongmenBeatBlueprints.length;
   debug.metrics.triggerSource = params.request.triggerSource;
   debug.timings.promptBuildMs = Number((performance.now() - promptStart).toFixed(1));
 
@@ -689,73 +459,63 @@ async function requestStructuredHongmenScene(params: {
         {
           type: "message",
           role: "system",
-          content: [
-            {
-              type: "input_text",
-              text: systemPrompt,
-            },
-          ],
+          content: [{ type: "input_text", text: systemPrompt }],
         },
         {
           type: "message",
           role: "user",
-          content: [
-            {
-              type: "input_text",
-              text: userPrompt,
-            },
-          ],
+          content: [{ type: "input_text", text: userPrompt }],
         },
       ],
       text: {
         format: {
           type: "json_schema",
-          name: "hongmen_scene_node",
+          name: "hongmen_linear_script_package",
           strict: true,
           schema: {
             type: "object",
             additionalProperties: false,
             required: [
-              "sceneId",
-              "type",
-              "speaker",
-              "text",
-              "backgroundTag",
-              "showStandee",
-              "standeeKey",
-              "choices",
-              "nextSceneId",
+              "packageId",
+              "storyId",
+              "protocolVersion",
+              "viewpointId",
+              "beats",
             ],
             properties: {
-              sceneId: { type: "string" },
-              type: {
+              packageId: { type: "string" },
+              storyId: { type: "string" },
+              protocolVersion: {
                 type: "string",
-                enum: ["narration", "dialogue", "decision"],
+                enum: [HONGMEN_AI_SCRIPT_PROTOCOL_VERSION],
               },
-              speaker: { type: "string" },
-              text: { type: "string" },
-              backgroundTag: { type: "string" },
-              showStandee: { type: "boolean" },
-              standeeKey: { type: "string" },
-              nextSceneId: { type: "string" },
-              choices: {
+              viewpointId: { type: "string" },
+              beats: {
                 type: "array",
+                minItems: hongmenBeatBlueprints.length,
+                maxItems: hongmenBeatBlueprints.length,
                 items: {
                   type: "object",
                   additionalProperties: false,
-                  required: [
-                    "id",
-                    "label",
-                    "outcome",
-                    "isHistorical",
-                    "nextSceneId",
-                  ],
+                  required: ["beatId", "lines"],
                   properties: {
-                    id: { type: "string" },
-                    label: { type: "string" },
-                    outcome: { type: "string" },
-                    isHistorical: { type: "boolean" },
-                    nextSceneId: { type: "string" },
+                    beatId: {
+                      type: "string",
+                      enum: hongmenBeatBlueprints.map((beat) => beat.beatId),
+                    },
+                    lines: {
+                      type: "array",
+                      minItems: 1,
+                      items: {
+                        type: "object",
+                        additionalProperties: false,
+                        required: ["speaker", "text"],
+                        properties: {
+                          speaker: { type: "string" },
+                          text: { type: "string" },
+                        },
+                      },
+                    },
                   },
                 },
               },
@@ -789,199 +549,130 @@ async function requestStructuredHongmenScene(params: {
   debug.timings.extractOutputMs = Number((performance.now() - extractStart).toFixed(1));
 
   return {
-    scene: JSON.parse(outputText) as AiStructuredSceneNode,
+    scriptPackage: JSON.parse(outputText) as HongmenAiScriptPackage,
     debug,
   };
 }
 
-function normalizeHongmenAiScene(scene: AiStructuredSceneNode): AiStructuredSceneNode {
-  const type = scene.type;
-  const normalizedText =
-    type === "dialogue"
-      ? normalizeText(scene.text).replace(/\n+/g, " ")
-      : normalizeText(scene.text);
-
-  const normalizedChoices =
-    type === "decision"
-      ? (scene.choices ?? []).map((choice) => ({
-          ...choice,
-          id: choice.id.trim(),
-          label: normalizeText(choice.label).replace(/\n+/g, " "),
-          outcome: normalizeText(choice.outcome ?? "").replace(/\n+/g, " "),
-          nextSceneId: choice.nextSceneId?.trim() ?? "",
-        }))
-      : [];
-
+function normalizeHongmenScriptLine(line: HongmenAiScriptLine): HongmenAiScriptLine {
   return {
-    sceneId: scene.sceneId.trim(),
-    type,
-    speaker: type === "narration" ? "" : scene.speaker.trim(),
-    text: normalizedText,
-    backgroundTag: scene.backgroundTag.trim(),
-    showStandee: Boolean(scene.showStandee),
-    standeeKey: scene.showStandee ? (scene.standeeKey?.trim() ?? "") : "",
-    choices: normalizedChoices,
-    nextSceneId: type === "decision" ? "" : scene.nextSceneId?.trim() ?? "",
+    speaker: line.speaker.trim(),
+    text: normalizeText(line.text),
   };
 }
 
-function validateStructuredShape(
-  scene: AiStructuredSceneNode,
-): HongmenSceneValidationResult {
-  const output: AiStructuredStoryOutput = {
-    protocolVersion: "ai-scene-v1",
-    initialSceneId: scene.sceneId,
-    scenes: [scene],
-  };
-
-  const report = validateAiStructuredStoryOutput(output, {
-    target: HONGMEN_AI_EVENT_ID,
-    backgrounds: hongmenAiBackdropMap,
-    speakerVisuals: getHongmenPlayableBase().speakerVisuals,
-    allowForwardReferences: true,
-  });
-
+function normalizeHongmenScriptPackage(
+  scriptPackage: HongmenAiScriptPackage,
+): HongmenAiScriptPackage {
   return {
-    ok: report.ok,
-    errors: report.errors.map((issue) => issue.message),
-    warnings: report.warnings.map((issue) => issue.message),
+    packageId: scriptPackage.packageId.trim(),
+    storyId: scriptPackage.storyId.trim(),
+    protocolVersion: scriptPackage.protocolVersion,
+    viewpointId: scriptPackage.viewpointId.trim(),
+    beats: scriptPackage.beats.map((beat) => ({
+      beatId: beat.beatId.trim(),
+      lines: beat.lines.map(normalizeHongmenScriptLine),
+    })),
   };
 }
 
-function validateBeatRules(
-  scene: AiStructuredSceneNode,
-  target: HongmenSceneTarget,
-): HongmenSceneValidationResult {
+function validateHongmenScriptPackage(
+  scriptPackage: HongmenAiScriptPackage,
+): HongmenScriptValidationResult {
   const errors: string[] = [];
   const warnings: string[] = [];
-  const progression = getProgressionRules(target);
   const quotePattern = /["“”‘’「」『』]/;
   const dialogueNarrationPattern =
     /(你看见|你听见|你察觉|席间|众人|周围|四下|空气里|火光|营帐里|有人|身后|此刻|这一瞬)/;
-  const endingPattern = /(这一轮|体验已结束|结束了|落幕|收束|到此为止)/;
 
-  if (scene.sceneId !== target.rawSceneId) {
-    errors.push(`sceneId 必须等于请求的 ${target.rawSceneId}。`);
+  if (!scriptPackage.packageId) {
+    errors.push("packageId 不能为空。");
+  }
+  if (!scriptPackage.storyId) {
+    errors.push("storyId 不能为空。");
+  }
+  if (scriptPackage.protocolVersion !== HONGMEN_AI_SCRIPT_PROTOCOL_VERSION) {
+    errors.push(`protocolVersion 必须是 ${HONGMEN_AI_SCRIPT_PROTOCOL_VERSION}。`);
+  }
+  if (scriptPackage.viewpointId !== HONGMEN_AI_VIEWPOINT_ID) {
+    errors.push(`viewpointId 必须是 ${HONGMEN_AI_VIEWPOINT_ID}。`);
+  }
+  if (scriptPackage.beats.length !== hongmenBeatBlueprints.length) {
+    errors.push(`beat 数量必须是 ${hongmenBeatBlueprints.length}。`);
   }
 
-  if (scene.type !== target.blueprint.sceneType) {
-    errors.push(`scene.type 必须是 ${target.blueprint.sceneType}。`);
-  }
+  hongmenBeatBlueprints.forEach((blueprint, index) => {
+    const beat = scriptPackage.beats[index];
+    if (!beat) {
+      errors.push(`缺少关键 beat：${blueprint.beatId}`);
+      return;
+    }
 
-  if (scene.backgroundTag !== target.blueprint.backgroundTag) {
-    errors.push(`backgroundTag 必须是 ${target.blueprint.backgroundTag}。`);
-  }
+    if (beat.beatId !== blueprint.beatId) {
+      errors.push(`第 ${index + 1} 个 beat 必须是 ${blueprint.beatId}。`);
+    }
 
-  if (target.blueprint.sceneType === "narration") {
-    if (scene.speaker.trim().length > 0) {
-      errors.push("narration 场景的 speaker 必须为空字符串。");
-    }
-    if (quotePattern.test(scene.text)) {
-      errors.push("narration 不能出现引号对白。");
-    }
-    if (scene.text.length > 90 || scene.text.split("\n").length > 3) {
-      errors.push("narration 需要更短，控制在 2 到 3 行内。");
-    }
-    if (scene.showStandee) {
-      errors.push("narration 场景不应显示立绘。");
-    }
-    if (scene.choices && scene.choices.length > 0) {
-      errors.push("narration 场景不应包含 choices。");
-    }
-  }
-
-  if (target.blueprint.sceneType === "dialogue") {
-    if (!target.blueprint.allowedSpeakers.includes(scene.speaker)) {
+    if (beat.lines.length < blueprint.minLines || beat.lines.length > blueprint.maxLines) {
       errors.push(
-        `dialogue 的 speaker 只能是 ${target.blueprint.allowedSpeakers.join(" / ")}。`,
+        `${blueprint.beatId} 的 line 数量必须在 ${blueprint.minLines}-${blueprint.maxLines} 之间。`,
       );
     }
-    if (!scene.showStandee) {
-      warnings.push("当前 dialogue 场景未显示立绘。");
-    }
-    if (scene.text.length > 56) {
-      errors.push("dialogue 太长了，请拆成更短的单句或短句。");
-    }
-    if (scene.text.includes("\n")) {
-      errors.push("dialogue 不能换行，应保持单人单框发言。");
-    }
-    if (quotePattern.test(scene.text)) {
-      errors.push("dialogue 不要再嵌套引号对白。");
-    }
-    if (dialogueNarrationPattern.test(scene.text)) {
-      errors.push("dialogue 混入了旁白、动作描写或群体信息，需要更干净。");
-    }
-    if (scene.choices && scene.choices.length > 0) {
-      errors.push("dialogue 场景不应包含 choices。");
-    }
-  }
 
-  if (target.blueprint.sceneType === "decision") {
-    if (scene.speaker !== "关键抉择") {
-      errors.push("decision 场景的 speaker 必须是关键抉择。");
-    }
-    if (endingPattern.test(scene.text)) {
-      errors.push("decision 文本不能混入结束或收束文案。");
-    }
-    if ((scene.nextSceneId ?? "").trim().length > 0) {
-      errors.push("decision 场景的顶层 nextSceneId 必须为空字符串。");
-    }
-    if ((scene.choices ?? []).length !== 3) {
-      errors.push("decision 场景必须返回 3 个 choices。");
-    }
+    beat.lines.forEach((line, lineIndex) => {
+      if (!line.text) {
+        errors.push(`${blueprint.beatId} 第 ${lineIndex + 1} 条 line 的 text 不能为空。`);
+      }
 
-    const expectedChoices = progression.choiceBlueprints;
-    scene.choices?.forEach((choice, index) => {
-      const expectedChoice = expectedChoices[index];
-      if (!expectedChoice) {
-        errors.push("decision 返回了超出预期的 choice。");
+      if (line.speaker === "刘邦") {
+        errors.push(`${blueprint.beatId} 第 ${lineIndex + 1} 条 line 不要把刘邦写成显式 speaker。`);
+      }
+
+      if (!line.speaker) {
+        if (!blueprint.allowNarration) {
+          errors.push(`${blueprint.beatId} 不允许使用空 speaker 旁白。`);
+        }
+        if (quotePattern.test(line.text)) {
+          errors.push(`${blueprint.beatId} 第 ${lineIndex + 1} 条旁白不能出现引号对白。`);
+        }
+        if (line.text.length > 90 || line.text.split("\n").length > 3) {
+          errors.push(`${blueprint.beatId} 第 ${lineIndex + 1} 条旁白需要更短。`);
+        }
+        if (line.text.length < 24) {
+          warnings.push(
+            `${blueprint.beatId} 第 ${lineIndex + 1} 条旁白偏短，建议补足一点环境感、局势感或心理感。`,
+          );
+        }
         return;
       }
 
-      if (choice.id !== expectedChoice.id) {
-        errors.push(`choice id 必须是 ${expectedChoice.id}。`);
+      if (!blueprint.allowedSpeakers.includes(line.speaker)) {
+        errors.push(
+          `${blueprint.beatId} 第 ${lineIndex + 1} 条 line 的 speaker 只能是 ${blueprint.allowedSpeakers.join(" / ") || "空字符串"}。`,
+        );
       }
-      if (choice.label !== expectedChoice.label) {
-        errors.push(`choice label 必须是 ${expectedChoice.label}。`);
+      if (line.text.includes("\n")) {
+        errors.push(`${blueprint.beatId} 第 ${lineIndex + 1} 条 dialogue 不能换行。`);
       }
-      if (choice.nextSceneId !== expectedChoice.nextSceneId) {
-        errors.push(`choice ${choice.id} 的 nextSceneId 必须是 ${expectedChoice.nextSceneId}。`);
+      if (line.text.length > 56) {
+        errors.push(`${blueprint.beatId} 第 ${lineIndex + 1} 条 dialogue 太长。`);
       }
-      if (typeof choice.outcome !== "string" || choice.outcome.trim().length === 0) {
-        errors.push(`choice ${choice.id} 需要一句简短 outcome。`);
+      if (line.text.length < 12) {
+        warnings.push(
+          `${blueprint.beatId} 第 ${lineIndex + 1} 条 dialogue 偏短，建议写成更完整的一句人话。`,
+        );
       }
-      if ((choice.outcome ?? "").length > 40) {
-        errors.push(`choice ${choice.id} 的 outcome 需要更短。`);
+      if (quotePattern.test(line.text)) {
+        errors.push(`${blueprint.beatId} 第 ${lineIndex + 1} 条 dialogue 不要嵌套引号。`);
       }
-      if (endingPattern.test(choice.outcome ?? "")) {
-        errors.push(`choice ${choice.id} 的 outcome 不能提前宣告结束。`);
+      if (dialogueNarrationPattern.test(line.text)) {
+        errors.push(`${blueprint.beatId} 第 ${lineIndex + 1} 条 dialogue 混入了旁白或群体信息。`);
       }
     });
-  }
+  });
 
-  if (target.blueprint.sceneType !== "decision") {
-    const nextSceneId = (scene.nextSceneId ?? "").trim();
-    if (progression.forcedNextSceneId !== null) {
-      if (nextSceneId !== progression.forcedNextSceneId) {
-        errors.push(`nextSceneId 必须是 ${progression.forcedNextSceneId}。`);
-      }
-    } else if (!progression.allowedNextSceneIds.includes(nextSceneId)) {
-      errors.push(
-        `nextSceneId 必须是 ${progression.allowedNextSceneIds.join(" / ")} 之一。`,
-      );
-    }
-  }
-
-  if (scene.showStandee && (scene.standeeKey ?? "").trim().length === 0) {
-    errors.push("showStandee 为 true 时，standeeKey 不能为空。");
-  }
-
-  if (target.blueprint.sceneType === "dialogue") {
-    const expectedVisualKey =
-      hongmenSpeakerKeyMap[scene.speaker as keyof typeof hongmenSpeakerKeyMap] ?? "";
-    if (expectedVisualKey && scene.standeeKey !== expectedVisualKey) {
-      errors.push(`当前 speaker 的 standeeKey 应为 ${expectedVisualKey}。`);
-    }
+  const totalLines = scriptPackage.beats.reduce((sum, beat) => sum + beat.lines.length, 0);
+  if (totalLines < 10 || totalLines > 18) {
+    warnings.push("总 line 数量偏离推荐范围 10-18。");
   }
 
   return {
@@ -991,86 +682,71 @@ function validateBeatRules(
   };
 }
 
-function mergeValidationResults(
-  ...results: HongmenSceneValidationResult[]
-): HongmenSceneValidationResult {
-  return {
-    ok: results.every((result) => result.ok),
-    errors: results.flatMap((result) => result.errors),
-    warnings: results.flatMap((result) => result.warnings),
-  };
-}
-
-function formatValidationMessages(result: HongmenSceneValidationResult) {
+function formatHongmenScriptValidation(
+  result: HongmenScriptValidationResult,
+) {
   return [...result.errors, ...result.warnings].join(" ");
 }
 
-async function requestValidatedHongmenScene(
-  params: HongmenAiSceneRequest,
-  target: HongmenSceneTarget,
-) {
-  const requestId = params.clientRequestId?.trim() || createHongmenAiRequestId();
-  let lastDebug: HongmenAiDebugInfo | undefined;
-  let lastValidation: HongmenSceneValidationResult | null = null;
-
-  for (let attempt = 1; attempt <= HONGMEN_SCENE_RETRY_LIMIT; attempt += 1) {
-    const correctionNote =
-      attempt === 1 || !lastValidation
-        ? undefined
-        : `The previous output broke these rules: ${formatValidationMessages(lastValidation)} Rewrite the same requested scene with shorter, cleaner, rule-compliant content.`;
-
-    const { scene, debug } = await requestStructuredHongmenScene({
-      request: params,
-      target,
-      requestId,
-      retryCount: attempt - 1,
-      correctionNote,
-    });
-    lastDebug = debug;
-
-    const normalizedScene = normalizeHongmenAiScene(scene);
-    const validationStart = performance.now();
-    const validation = mergeValidationResults(
-      validateStructuredShape(normalizedScene),
-      validateBeatRules(normalizedScene, target),
-    );
-    debug.timings.validationMs = Number((performance.now() - validationStart).toFixed(1));
-
-    if (validation.ok) {
-      return {
-        scene: normalizedScene,
-        debug,
-        retryCount: attempt - 1,
-        warning:
-          attempt > 1 ? "AI 已自动重试一次，并收束为更干净的单幕输出。" : undefined,
-      };
-    }
-
-    lastValidation = validation;
+function createSceneStandee(speaker: string): EventSceneStandee {
+  if (!speaker || speaker === "刘邦") {
+    return {
+      mode: "hidden",
+      hideForViewpoint: true,
+    };
   }
 
-  throw Object.assign(new Error("AI scene failed protocol validation."), {
-    debug: lastDebug,
-    validation: lastValidation,
-  });
+  const visualKey =
+    hongmenSpeakerVisualKeyMap[speaker as keyof typeof hongmenSpeakerVisualKeyMap];
+
+  if (!visualKey) {
+    return {
+      mode: "hidden",
+    };
+  }
+
+  return {
+    mode: "speaker",
+    visualKey,
+    hideForViewpoint: true,
+  };
 }
 
-function adaptHongmenAiScene(scene: AiStructuredSceneNode) {
+function adaptHongmenScriptPackageToPlayableContent(
+  scriptPackage: HongmenAiScriptPackage,
+): EventPlayableContent {
   const base = getHongmenPlayableBase();
-  const adapted = adaptAiStructuredStoryToPlayableContent({
-    eventId: HONGMEN_AI_EVENT_ID,
-    output: {
-      protocolVersion: "ai-scene-v1",
-      initialSceneId: scene.sceneId,
-      scenes: [scene],
-    },
-    defaultBackdrop: base.defaultBackdrop,
-    backgrounds: hongmenAiBackdropMap,
-    viewpoints: base.viewpoints,
-    speakerVisuals: base.speakerVisuals,
+  const flattened = scriptPackage.beats.flatMap((beat, beatIndex) => {
+    const blueprint = hongmenBeatBlueprints[beatIndex];
+    return beat.lines.map((line, lineIndex) => {
+      const sceneId = `${blueprint.beatId}-${lineIndex + 1}`;
+
+      return {
+        sceneId,
+        type: line.speaker ? "dialogue" : "narration",
+        speaker: line.speaker,
+        text: line.text,
+        background: hongmenAiBackdropMap[blueprint.backgroundTag],
+        standee: createSceneStandee(line.speaker),
+      } satisfies EventScene;
+    });
   });
 
-  return adapted.scenes[0];
+  const scenes = flattened.map((scene, index) => ({
+    ...scene,
+    nextSceneId: flattened[index + 1]?.sceneId,
+  }));
+
+  return {
+    protocolVersion: "event-story-v1",
+    contentSource: "ai-structured",
+    eventId: HONGMEN_AI_EVENT_ID,
+    initialSceneId: scenes[0]?.sceneId ?? base.initialSceneId,
+    defaultBackdrop: base.defaultBackdrop,
+    viewpoints: base.viewpoints,
+    scenes,
+    speakerVisuals: base.speakerVisuals,
+  };
 }
 
 export function shouldUseHongmenAiMode(eventId: string, viewpointId?: string) {
@@ -1082,49 +758,68 @@ export function getHongmenAiInitialViewpointId() {
   return HONGMEN_AI_VIEWPOINT_ID;
 }
 
-export async function generateHongmenAiScene(
-  params: HongmenAiSceneRequest,
-): Promise<HongmenAiSceneResponse> {
+export async function generateHongmenAiStoryPackage(
+  params: HongmenAiStoryPackageRequest,
+): Promise<HongmenAiStoryPackageResponse> {
   const serviceStart = performance.now();
-  const target = parseHongmenSceneTarget(params.requestedSceneId);
+  const fallbackPlayableContent = getFallbackPlayableContent();
 
   if (
     params.eventId !== HONGMEN_AI_EVENT_ID ||
-    params.viewpointId !== HONGMEN_AI_VIEWPOINT_ID ||
-    !target
+    params.viewpointId !== HONGMEN_AI_VIEWPOINT_ID
   ) {
     return {
       ok: false,
       source: "fallback-local",
-      scene: getFallbackSceneForRequestedId(params.requestedSceneId || HONGMEN_AI_INITIAL_SCENE_ID),
-      error: "当前只支持鸿门宴刘邦视角的 AI 单幕生成。",
+      playableContent: fallbackPlayableContent,
+      error: "当前只支持鸿门宴刘邦视角的 AI 线性脚本生成。",
     };
   }
 
   try {
-    const { scene: generatedScene, debug, warning } =
-      await requestValidatedHongmenScene(params, target);
+    const requestId = params.clientRequestId?.trim() || createHongmenAiRequestId();
+    const { scriptPackage, debug } = await requestStructuredHongmenScriptPackage({
+      request: params,
+      requestId,
+    });
+
+    const normalizedPackage = normalizeHongmenScriptPackage(scriptPackage);
+    const validationStart = performance.now();
+    const validation = validateHongmenScriptPackage(normalizedPackage);
+    debug.timings.validationMs = Number((performance.now() - validationStart).toFixed(1));
+
+    if (!validation.ok) {
+      debug.timings.serviceTotalMs = Number((performance.now() - serviceStart).toFixed(1));
+
+      return {
+        ok: false,
+        source: "fallback-local",
+        playableContent: fallbackPlayableContent,
+        warning: "AI 线性脚本结构不合法，已切回本地静态剧情。",
+        error: formatHongmenScriptValidation(validation),
+        debug,
+      };
+    }
+
     const adaptStart = performance.now();
-    const adaptedScene = adaptHongmenAiScene(generatedScene);
+    const adaptedPlayableContent =
+      adaptHongmenScriptPackageToPlayableContent(normalizedPackage);
+    debug.metrics.packageLineCount = normalizedPackage.beats.reduce(
+      (sum, beat) => sum + beat.lines.length,
+      0,
+    );
     debug.timings.adaptMs = Number((performance.now() - adaptStart).toFixed(1));
     debug.timings.serviceTotalMs = Number((performance.now() - serviceStart).toFixed(1));
 
     return {
       ok: true,
       source: "ai",
-      scene: adaptedScene,
-      warning,
+      scriptPackage: normalizedPackage,
+      playableContent: adaptedPlayableContent,
       debug,
     };
   } catch (error) {
-    const debug =
-      error instanceof Error && "debug" in error && error.debug
-        ? (error.debug as HongmenAiDebugInfo)
-        : createHongmenAiDebugInfo(getOpenAiConfig());
-    const validation =
-      error instanceof Error && "validation" in error && error.validation
-        ? (error.validation as HongmenSceneValidationResult)
-        : null;
+    const debug = createHongmenAiDebugInfo(getOpenAiConfig());
     const errorMessage =
       error instanceof Error ? error.message : "Unknown AI error.";
     const statusMatch = /status (\d+)\s+([^.]+)\. Body:([\s\S]*)$/i.exec(errorMessage);
@@ -1133,20 +828,19 @@ export async function generateHongmenAiScene(
       debug.upstreamStatusText = statusMatch[2].trim();
       debug.upstreamBody = statusMatch[3].trim();
     }
+    debug.timings.serviceTotalMs = Number((performance.now() - serviceStart).toFixed(1));
 
-    console.error("[hongmen-ai] upstream request failed", {
+    console.error("[hongmen-ai] linear script package request failed", {
       ...debug,
       error: errorMessage,
-      validation: validation ? formatValidationMessages(validation) : undefined,
     });
-    debug.timings.serviceTotalMs = Number((performance.now() - serviceStart).toFixed(1));
 
     return {
       ok: false,
       source: "fallback-local",
-      scene: getFallbackSceneForTarget(target),
-      warning: "AI 当前一幕生成失败，已切回本地剧情。",
-      error: validation ? formatValidationMessages(validation) : errorMessage,
+      playableContent: fallbackPlayableContent,
+      warning: "AI 线性脚本生成失败，已切回本地静态剧情。",
+      error: errorMessage,
       debug,
     };
   }

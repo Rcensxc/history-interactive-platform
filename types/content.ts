@@ -205,6 +205,35 @@ export type AiStructuredStoryOutput = {
   scenes: AiStructuredSceneNode[];
 };
 
+export type AiStructuredStoryPackage = {
+  packageId: string;
+  storyId: string;
+  protocolVersion: AiStructuredStoryProtocolVersion;
+  viewpointId: string;
+  initialSceneId: string;
+  scenes: AiStructuredSceneNode[];
+};
+
+export type HongmenAiScriptProtocolVersion = "hongmen-linear-script-v1";
+
+export type HongmenAiScriptLine = {
+  speaker: string;
+  text: string;
+};
+
+export type HongmenAiScriptBeat = {
+  beatId: string;
+  lines: HongmenAiScriptLine[];
+};
+
+export type HongmenAiScriptPackage = {
+  packageId: string;
+  storyId: string;
+  protocolVersion: HongmenAiScriptProtocolVersion;
+  viewpointId: string;
+  beats: HongmenAiScriptBeat[];
+};
+
 export type AiStructuredSceneProtocolDefinition = {
   protocolVersion: AiStructuredStoryProtocolVersion;
   supportedSceneTypes: EventSceneType[];
