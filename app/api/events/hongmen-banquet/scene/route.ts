@@ -1,17 +1,17 @@
-import { NextResponse } from "next/server";
+﻿import { NextResponse } from "next/server";
 import {
-  generateHongmenAiScene,
+  generateHongmenAiStoryPackage,
   HONGMEN_AI_EVENT_ID,
   HONGMEN_AI_VIEWPOINT_ID,
-  type HongmenAiSceneRequest,
+  type HongmenAiStoryPackageRequest,
 } from "@/lib/hongmen-ai";
 
 export async function POST(request: Request) {
   const routeStart = performance.now();
-  let payload: HongmenAiSceneRequest | null = null;
+  let payload: HongmenAiStoryPackageRequest | null = null;
 
   try {
-    payload = (await request.json()) as HongmenAiSceneRequest;
+    payload = (await request.json()) as HongmenAiStoryPackageRequest;
   } catch {
     return NextResponse.json(
       {
@@ -26,21 +26,23 @@ export async function POST(request: Request) {
     !payload ||
     payload.eventId !== HONGMEN_AI_EVENT_ID ||
     payload.viewpointId !== HONGMEN_AI_VIEWPOINT_ID ||
-    typeof payload.requestedSceneId !== "string" ||
-    !Array.isArray(payload.history)
+    (payload.triggerSource !== undefined &&
+      payload.triggerSource !== "initial" &&
+      payload.triggerSource !== "reset")
   ) {
     return NextResponse.json(
       {
         ok: false,
-        error: "当前接口只支持鸿门宴刘邦视角的单幕生成请求。",
+        error: "当前接口只支持鸿门宴刘邦视角的整包剧情生成请求。",
       },
       { status: 400 },
     );
   }
 
   const routeAfterPayloadMs = Number((performance.now() - routeStart).toFixed(1));
-  const result = await generateHongmenAiScene(payload);
+  const result = await generateHongmenAiStoryPackage(payload);
   const routeBeforeResponseMs = Number((performance.now() - routeStart).toFixed(1));
+
   if (result.debug) {
     result.debug.timings = {
       ...result.debug.timings,
@@ -51,12 +53,13 @@ export async function POST(request: Request) {
 
   console.info("[hongmen-ai][route]", {
     requestId: result.debug?.requestId ?? payload.clientRequestId ?? "unknown",
-    sceneId: payload.requestedSceneId,
+    packageMode: "full-story-package",
     triggerSource: payload.triggerSource ?? "unknown",
     timings: result.debug?.timings,
     metrics: result.debug?.metrics,
     source: result.source,
     ok: result.ok,
   });
+
   return NextResponse.json(result);
 }
