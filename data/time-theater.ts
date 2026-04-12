@@ -1,4 +1,4 @@
-import type { TimeTheaterLine, TimeTheaterTopic, Tone } from "@/types/content";
+﻿import type { TimeTheaterLine, TimeTheaterTopic, Tone } from "@/types/content";
 import { timeTheaterEligibleFigureIds } from "@/data/history-registry";
 
 export const timeTheaterCastIds = timeTheaterEligibleFigureIds;
@@ -13,30 +13,27 @@ export const timeTheaterTopics: TimeTheaterTopic[] = [
   {
     id: "crisis-command",
     title: "危机来临时，领导者该先稳人心还是先稳制度？",
-    description: "更偏策略与执行的讨论，适合从决策角度看人物差异。",
-    requiredSpeakerIds: ["liubang", "wuzetian", "wangyangming"],
-    opening: "舞台灯光亮起，三位来自不同时代的人物围坐同桌，话题直接切入局势处理。",
+    description: "更偏策略与执行的讨论，适合观察不同人物在危机来临时会先抓什么、先稳什么。",
+    opening: "灯光刚落在长桌中央，话题已经直接切进危机处理。不同朝代的人物同时落座，谁先开口，几乎就等于先暴露了自己的判断方式。",
   },
   {
     id: "long-game",
-    title: "真正难的不是赢下一仗，而是把局面长期维持住",
-    description: "更偏全局思考与节奏控制，适合看不同角色的处事方式。",
-    requiredSpeakerIds: ["liubang", "zhuge-liang", "wangyangming"],
-    opening: "这次讨论更安静，没有人急着抢话，但每一句都带着长线判断。",
+    title: "真正难的不是赢下一阵，而是把局面长期维持住",
+    description: "更偏全局思考与节奏控制，适合看不同人物如何理解长期布局、代价与耐心。",
+    opening: "这一次的讨论没有急着争高下，气氛反而更安静。可越安静，越能听出每个人对“长期”二字的理解并不相同。",
   },
   {
     id: "memory-and-expression",
     title: "一个时代如何被记住，靠的是胜负，还是留下来的表达？",
-    description: "更偏人物气质与表达方式，适合感受跨时代的价值碰撞。",
-    requiredSpeakerIds: ["wuzetian", "liqingzhao", "wangyangming"],
-    opening: "话题从历史记忆展开，舞台上的气氛从权力转向表达与感受。",
+    description: "更偏人物气质与表达方式，适合感受不同历史人物如何理解“被时代记住”这件事。",
+    opening: "话题从历史记忆展开，桌上的气氛也慢慢从权力与成败，转向了表达、感受与留下痕迹的方式。",
   },
 ];
 
 export const timeTheaterStageMeta = {
   title: "跨时空人物互动剧场试玩页",
   preparationDescription:
-    "先决定谁要同台、谁是你的第一视角、他们正在讨论什么，再进入正式互动场景。当前仍使用少量假数据，重点是把沉浸式 AVG 流程和舞台感做对。",
+    "先决定谁要同台、谁是你的第一视角、他们正在讨论什么，再进入正式互动场景。当前使用固定舞台和线性播放逻辑，重点是把跨时空讨论的成品体验做稳定。",
   backdropLabel: "剧场",
   backdropDescription:
     "背景占位图：深色长桌、低光舞台、跨时代人物同席而坐，气氛更像一场被刻意安排的历史会谈。",
@@ -112,7 +109,7 @@ export const timeTheaterScripts: Record<string, TimeTheaterLine[]> = {
     },
     {
       speakerId: "liubang",
-      text: "我同意。很多时候不是最强的人赢，而是能熬到最后、还能把人聚在一起的人赢。",
+      text: "我同意。很多时候不是最强的人赢，而是能熬到最后、还肯把人聚在一起的人赢。",
     },
     {
       speakerId: "wangyangming",
@@ -126,7 +123,7 @@ export const timeTheaterScripts: Record<string, TimeTheaterLine[]> = {
   "memory-and-expression": [
     {
       speakerId: "liqingzhao",
-      text: "很多人以为历史只记得成败，但真正能留住人的，常常是那些让人感同身受的表达。",
+      text: "很多人以为历史只记得成败，但真正能留下人的，常常是那些让人感同身受的表达。",
     },
     {
       speakerId: "wuzetian",

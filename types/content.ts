@@ -250,11 +250,26 @@ export type TimeTheaterTopic = {
   id: string;
   title: string;
   description: string;
-  requiredSpeakerIds: string[];
   opening: string;
 };
 
 export type TimeTheaterLine = {
   speakerId: string;
   text: string;
+};
+
+export type TimeTheaterAiScriptProtocolVersion = "time-theater-linear-v1";
+
+export type TimeTheaterAiScriptLine = {
+  type: "narration" | "dialogue";
+  speakerId: string;
+  text: string;
+};
+
+export type TimeTheaterAiScriptPackage = {
+  protocolVersion: TimeTheaterAiScriptProtocolVersion;
+  topicId: string;
+  viewpointId: string;
+  characters: string[];
+  lines: TimeTheaterAiScriptLine[];
 };
