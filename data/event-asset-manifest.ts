@@ -1,4 +1,5 @@
 import type { EventSpeakerVisual, PlaceholderAsset } from "@/types/content";
+import { getCharacterStandeeImage } from "@/data/character-asset-manifest";
 
 type EventStageAssetManifest = {
   backgrounds?: {
@@ -43,12 +44,6 @@ const eventAssetManifest: Record<string, EventStageAssetManifest> = {
           "/assets/events/hongmen-banquet/backgrounds/withdrawal-path.jpg",
       },
     },
-    standees: {
-      liubang: "/assets/events/hongmen-banquet/standees/liubang.png",
-      xiangyu: "/assets/events/hongmen-banquet/standees/xiangyu.png",
-      xiangbo: "/assets/events/hongmen-banquet/standees/xiangbo.png",
-      "fan-kuai": "/assets/events/hongmen-banquet/standees/fan-kuai.png",
-    },
   },
 };
 
@@ -86,7 +81,9 @@ export function enrichEventSpeakerVisual(params: {
     return visual;
   }
 
-  const mappedImage = eventAssetManifest[eventId]?.standees?.[visualKey];
+  const mappedImage =
+    getCharacterStandeeImage(visualKey) ??
+    eventAssetManifest[eventId]?.standees?.[visualKey];
   if (!mappedImage) {
     return visual;
   }
