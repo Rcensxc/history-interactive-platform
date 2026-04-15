@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { cn } from "@/lib/cn";
 import {
   canContinueScene,
   createEventSceneMap,
@@ -12,9 +11,14 @@ import {
   shouldShowSpeakerName,
 } from "@/lib/event-story-runtime";
 import {
+  enrichEventBackgroundAsset,
+  enrichEventSpeakerVisual,
+} from "@/data/event-asset-manifest";
+import {
   ImmersiveStageShell,
   StageProgressFooter,
 } from "@/components/play/immersive-stage-shell";
+import { StageStandeeCard } from "@/components/play/stage-standee-card";
 import type {
   EventChoice,
   EventPlayableContent,
@@ -61,18 +65,26 @@ export function EventStoryPlayer({
   const currentChoice = choices[currentScene.sceneId];
   const nextSceneId = resolveSceneNextId(currentScene, currentChoice);
   const isFinished = !nextSceneId;
-  const resolvedBackground = resolveSceneBackground(playableContent, currentScene);
+  const resolvedBackground = enrichEventBackgroundAsset({
+    eventId: eventItem.id,
+    sceneId: currentScene.sceneId,
+    background: resolveSceneBackground(playableContent, currentScene),
+  });
   const resolvedStandee = resolveSceneStandee({
     scene: currentScene,
     selectedViewpoint,
     speakerVisuals: playableContent.speakerVisuals,
   });
-  const activeVisual = resolvedStandee?.visual ?? {
-    label: selectedViewpoint.portraitLabel,
-    tone: selectedViewpoint.portraitTone,
-    subtitle: selectedViewpoint.title,
-    alignment: "center" as const,
-  };
+  const activeVisual = enrichEventSpeakerVisual({
+    eventId: eventItem.id,
+    visualKey: resolvedStandee?.visualKey,
+    visual: resolvedStandee?.visual ?? {
+      label: selectedViewpoint.portraitLabel,
+      tone: selectedViewpoint.portraitTone,
+      subtitle: selectedViewpoint.title,
+      alignment: "center" as const,
+    },
+  });
   const showSpeakerName = shouldShowSpeakerName(currentScene);
   const showStandee = !!resolvedStandee;
 
@@ -116,6 +128,7 @@ export function EventStoryPlayer({
       accent="amber"
       protocolVersion={playableContent.protocolVersion}
       backgroundLabel={resolvedBackground.label}
+      backgroundImage={resolvedBackground.image}
       sceneId={currentScene.sceneId}
       topActions={
         <>
@@ -138,29 +151,7 @@ export function EventStoryPlayer({
         </>
       }
       standee={
-        showStandee ? (
-          <div
-            className={cn(
-              "w-full max-w-[430px] translate-y-3 transition-all duration-300",
-              activeVisual.alignment === "left" && "lg:-translate-x-12",
-              activeVisual.alignment === "right" && "lg:translate-x-12",
-            )}
-          >
-            <div className="relative overflow-hidden rounded-[38px] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.1),rgba(255,255,255,0.02))] p-5 shadow-[0_35px_100px_rgba(0,0,0,0.32)]">
-              <div className="absolute inset-x-12 top-4 h-16 rounded-full bg-white/10 blur-3xl" />
-              <div className="relative flex min-h-[420px] flex-col justify-end rounded-[32px] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.02),rgba(0,0,0,0.3))] px-8 py-8">
-                <div className="space-y-3 text-center">
-                  <div className="font-display text-[6.5rem] leading-none text-stone-50 md:text-[7.5rem]">
-                    {activeVisual.label}
-                  </div>
-                  <p className="text-xs uppercase tracking-[0.4em] text-stone-300/70">
-                    {activeVisual.subtitle}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        ) : null
+        showStandee ? <StageStandeeCard visual={activeVisual} /> : null
       }
       speakerBadge={
         showSpeakerName ? (
