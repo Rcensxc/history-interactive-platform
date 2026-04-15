@@ -1,13 +1,17 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import {
+  getCharacterPortraitImage,
+  getCharacterStandeeImage,
+} from "@/data/character-asset-manifest";
+import {
   figureRelatedExperiences,
   historicalFigures,
 } from "@/data/history-registry";
+import { CharacterAssetArt } from "@/components/characters/character-asset-art";
 import { Panel } from "@/components/ui/panel";
-import { PlaceholderArt } from "@/components/ui/placeholder-art";
 import { cn } from "@/lib/cn";
 import type { FigureExperienceOption } from "@/types/content";
 
@@ -135,7 +139,7 @@ export function FigureGallery() {
                 </p>
               </div>
               <div className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-stone-300">
-                首批人物卡仍以占位视觉为主，后续可替换为正式素材
+                左侧优先显示游戏立绘，右侧详情图区优先显示历史画作
               </div>
             </div>
 
@@ -207,11 +211,13 @@ export function FigureGallery() {
                   )}
                 >
                   <div className="space-y-4">
-                    <PlaceholderArt
+                    <CharacterAssetArt
+                      imageSrc={getCharacterStandeeImage(figure.id)}
                       label={figure.portraitLabel}
                       caption={`${figure.dynasty} · ${figure.role}`}
                       tone={figure.portraitTone}
                       className="min-h-[180px]"
+                      variant="standee"
                     />
                     <div>
                       <div className="flex items-center justify-between gap-3">
@@ -255,11 +261,13 @@ export function FigureGallery() {
               </span>
             </div>
 
-            <PlaceholderArt
+            <CharacterAssetArt
+              imageSrc={getCharacterPortraitImage(selectedFigure.id)}
               label={selectedFigure.portraitLabel}
               caption={`${selectedFigure.title} · ${selectedFigure.signatureEvent}`}
               tone={selectedFigure.portraitTone}
               className="min-h-[260px]"
+              variant="portrait"
             />
 
             <div className="space-y-5">
@@ -313,7 +321,7 @@ export function FigureGallery() {
                     从这个人物继续进入体验
                   </h3>
                   <p className="mt-3 max-w-2xl text-sm leading-7 text-stone-300">
-                    主路径先从相关历史事件进入这位人物所处的关键局面；跨时空互动则用于观察他的表达、判断与立场。
+                    主路径先从相关历史事件进入这位人物所处的关键局面；跨时空互动则用于观察他在另一种玩法里的表达、判断与立场。
                   </p>
                 </div>
 

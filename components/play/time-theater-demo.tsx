@@ -7,11 +7,13 @@ import {
   timeTheaterTopics,
 } from "@/data/time-theater";
 import { historicalFigures } from "@/data/history-registry";
+import { getCharacterStandeeImage } from "@/data/character-asset-manifest";
 import { cn } from "@/lib/cn";
 import {
   ImmersiveStageShell,
   StageProgressFooter,
 } from "@/components/play/immersive-stage-shell";
+import { StageStandeeCard } from "@/components/play/stage-standee-card";
 import { Panel } from "@/components/ui/panel";
 import { PlaceholderArt } from "@/components/ui/placeholder-art";
 import { SectionTitle } from "@/components/ui/section-title";
@@ -86,10 +88,15 @@ export function TimeTheaterDemo() {
     ? {
         label: currentSpeaker.portraitLabel,
         subtitle: `${currentSpeaker.dynasty} · ${currentSpeaker.role}`,
+        alignment: "center" as const,
+        tone: currentSpeaker.portraitTone,
+        image: getCharacterStandeeImage(currentSpeaker.id),
       }
     : {
         label: selectedViewpoint?.portraitLabel ?? "剧",
         subtitle: selectedViewpoint?.name ?? "第一视角",
+        alignment: "center" as const,
+        tone: selectedViewpoint?.portraitTone ?? "jade",
       };
 
   const createLocalFallbackScriptPackage = ({
@@ -317,23 +324,7 @@ export function TimeTheaterDemo() {
           </>
         }
         standee={
-          showStandee ? (
-            <div className="w-full max-w-[430px] translate-y-3 transition-all duration-300">
-              <div className="relative overflow-hidden rounded-[38px] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.1),rgba(255,255,255,0.02))] p-5 shadow-[0_35px_100px_rgba(0,0,0,0.32)]">
-                <div className="absolute inset-x-12 top-4 h-16 rounded-full bg-white/10 blur-3xl" />
-                <div className="relative flex min-h-[420px] flex-col justify-end rounded-[32px] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.02),rgba(0,0,0,0.3))] px-8 py-8">
-                  <div className="space-y-3 text-center">
-                    <div className="font-display text-[6.5rem] leading-none text-stone-50 md:text-[7.5rem]">
-                      {activeVisual.label}
-                    </div>
-                    <p className="text-xs uppercase tracking-[0.4em] text-stone-300/70">
-                      {activeVisual.subtitle}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          ) : null
+          showStandee ? <StageStandeeCard visual={activeVisual} /> : null
         }
         speakerBadge={
           showSpeakerName ? (
