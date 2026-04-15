@@ -6,6 +6,7 @@ type ImmersiveStageShellProps = {
   accent?: "amber" | "jade";
   protocolVersion?: string;
   backgroundLabel?: string;
+  backgroundImage?: string;
   sceneId?: string;
   topActions: ReactNode;
   standee?: ReactNode;
@@ -26,6 +27,7 @@ export function ImmersiveStageShell({
   accent = "amber",
   protocolVersion,
   backgroundLabel,
+  backgroundImage,
   sceneId,
   topActions,
   standee,
@@ -42,6 +44,13 @@ export function ImmersiveStageShell({
         data-story-scene={sceneId}
         className="relative min-h-[calc(100vh-8rem)] overflow-hidden rounded-[32px] border border-white/10 bg-[#090b0f] shadow-[0_24px_80px_rgba(0,0,0,0.35)]"
       >
+        {backgroundImage ? (
+          <div
+            className="absolute inset-0 bg-cover bg-center"
+            style={{ backgroundImage: `url(${backgroundImage})` }}
+            aria-hidden="true"
+          />
+        ) : null}
         <div className={stageBackdropClasses[accent]} />
         <div className="absolute inset-0 bg-[linear-gradient(0deg,rgba(0,0,0,0.18),rgba(0,0,0,0.18)),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:auto,96px_96px,96px_96px]" />
         <div className="absolute inset-x-0 bottom-0 h-[45%] bg-[linear-gradient(180deg,transparent,rgba(7,8,12,0.18)_20%,rgba(7,8,12,0.94)_100%)]" />

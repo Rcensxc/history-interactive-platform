@@ -145,6 +145,7 @@ export type EventSpeakerVisual = {
   tone: Tone;
   subtitle: string;
   alignment: "left" | "center" | "right";
+  image?: string;
 };
 
 export type EventStoryProtocolVersion = "event-story-v1";

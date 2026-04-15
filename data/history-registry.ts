@@ -454,7 +454,7 @@ const eventStoryCatalog: Record<string, EventPlayableContent> = {
         speaker: "项羽",
         speakerId: "xiangyu",
         visualKey: "xiangyu",
-        text: "沛公远来，不必拘束。今夜只当叙旧，但谁都明白，席间没有一句是真正轻松的。",
+        text: "沛公远来，不必拘束。今夜只当叙旧。",
         nextSceneId: "decision-one",
       },
       {
