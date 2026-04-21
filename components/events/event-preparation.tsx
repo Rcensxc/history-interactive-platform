@@ -2,10 +2,12 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { CharacterAssetArt } from "@/components/characters/character-asset-art";
 import { cn } from "@/lib/cn";
 import { Panel } from "@/components/ui/panel";
 import { PlaceholderArt } from "@/components/ui/placeholder-art";
 import { SectionTitle } from "@/components/ui/section-title";
+import { getCharacterStandeeImage } from "@/data/character-asset-manifest";
 import type { EventPreparationData } from "@/types/content";
 
 type EventPreparationProps = {
@@ -134,10 +136,13 @@ export function EventPreparation({
                           )}
                         >
                           <div className="flex items-start gap-4">
-                            <PlaceholderArt
+                            <CharacterAssetArt
+                              imageSrc={getCharacterStandeeImage(viewpoint.figureId)}
                               label={viewpoint.portraitLabel}
+                              caption={`${viewpoint.name} · ${viewpoint.title}`}
                               tone={viewpoint.portraitTone}
                               className="w-28 shrink-0"
+                              variant="standee"
                             />
                             <div className="space-y-2">
                               <div className="flex items-center gap-3">

@@ -1,11 +1,12 @@
 import type { EventSpeakerVisual, PlaceholderAsset } from "@/types/content";
+import { enrichSharedBackgroundAsset } from "@/data/background-asset-manifest";
 import { getCharacterStandeeImage } from "@/data/character-asset-manifest";
 
 type EventStageAssetManifest = {
   backgrounds?: {
-    defaultImage?: string;
-    sceneImages?: Record<string, string>;
-    scenePrefixImages?: Record<string, string>;
+    defaultBackgroundKey?: string;
+    sceneBackgroundKeys?: Record<string, string>;
+    scenePrefixBackgroundKeys?: Record<string, string>;
   };
   standees?: Record<string, string>;
 };
@@ -13,35 +14,22 @@ type EventStageAssetManifest = {
 const eventAssetManifest: Record<string, EventStageAssetManifest> = {
   "hongmen-banquet": {
     backgrounds: {
-      defaultImage:
-        "/assets/events/hongmen-banquet/backgrounds/banquet-main.jpg",
-      sceneImages: {
-        arrival:
-          "/assets/events/hongmen-banquet/backgrounds/arrival-camp.jpg",
-        "opening-dialogue":
-          "/assets/events/hongmen-banquet/backgrounds/banquet-main.jpg",
-        "decision-one":
-          "/assets/events/hongmen-banquet/backgrounds/banquet-main.jpg",
-        "fan-kuai-entry":
-          "/assets/events/hongmen-banquet/backgrounds/fan-kuai-entry.jpg",
-        "decision-two":
-          "/assets/events/hongmen-banquet/backgrounds/withdrawal-path.jpg",
-        ending:
-          "/assets/events/hongmen-banquet/backgrounds/withdrawal-path.jpg",
+      defaultBackgroundKey: "banquet-hall-night",
+      sceneBackgroundKeys: {
+        arrival: "camp-night",
+        "opening-dialogue": "banquet-hall-night",
+        "decision-one": "banquet-hall-night",
+        "fan-kuai-entry": "military-tent",
+        "decision-two": "camp-night",
+        ending: "camp-night",
       },
-      scenePrefixImages: {
-        "arrival-":
-          "/assets/events/hongmen-banquet/backgrounds/arrival-camp.jpg",
-        "banquet-probe-":
-          "/assets/events/hongmen-banquet/backgrounds/banquet-main.jpg",
-        "pressure-rise-":
-          "/assets/events/hongmen-banquet/backgrounds/banquet-main.jpg",
-        "fan-kuai-entry-":
-          "/assets/events/hongmen-banquet/backgrounds/fan-kuai-entry.jpg",
-        "exit-":
-          "/assets/events/hongmen-banquet/backgrounds/withdrawal-path.jpg",
-        "ending-":
-          "/assets/events/hongmen-banquet/backgrounds/withdrawal-path.jpg",
+      scenePrefixBackgroundKeys: {
+        "arrival-": "camp-night",
+        "banquet-probe-": "banquet-hall-night",
+        "pressure-rise-": "banquet-hall-night",
+        "fan-kuai-entry-": "military-tent",
+        "exit-": "camp-night",
+        "ending-": "camp-night",
       },
     },
   },
@@ -54,21 +42,17 @@ export function enrichEventBackgroundAsset(params: {
 }): PlaceholderAsset {
   const { eventId, sceneId, background } = params;
   const manifest = eventAssetManifest[eventId];
-  const mappedImage =
-    manifest?.backgrounds?.sceneImages?.[sceneId] ??
-    Object.entries(manifest?.backgrounds?.scenePrefixImages ?? {}).find(
+  const backgroundKey =
+    manifest?.backgrounds?.sceneBackgroundKeys?.[sceneId] ??
+    Object.entries(manifest?.backgrounds?.scenePrefixBackgroundKeys ?? {}).find(
       ([prefix]) => sceneId.startsWith(prefix),
     )?.[1] ??
-    manifest?.backgrounds?.defaultImage;
+    manifest?.backgrounds?.defaultBackgroundKey;
 
-  if (!mappedImage) {
-    return background;
-  }
-
-  return {
+  return enrichSharedBackgroundAsset({
     ...background,
-    image: mappedImage,
-  };
+    backgroundKey: background.backgroundKey ?? backgroundKey,
+  });
 }
 
 export function enrichEventSpeakerVisual(params: {
