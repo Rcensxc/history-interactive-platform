@@ -35,6 +35,7 @@ export const timeTheaterStageMeta = {
   preparationDescription:
     "先决定谁要同台、谁是你的第一视角、他们正在讨论什么，再进入正式互动场景。当前使用固定舞台和线性播放逻辑，重点是把跨时空讨论的成品体验做稳定。",
   backdropLabel: "剧场",
+  backdropKey: "council-chamber-night",
   backdropDescription:
     "背景占位图：深色长桌、低光舞台、跨时代人物同席而坐，气氛更像一场被刻意安排的历史会谈。",
 };

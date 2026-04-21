@@ -6,6 +6,7 @@ import {
   timeTheaterStageMeta,
   timeTheaterTopics,
 } from "@/data/time-theater";
+import { enrichSharedBackgroundAsset } from "@/data/background-asset-manifest";
 import { historicalFigures } from "@/data/history-registry";
 import { getCharacterStandeeImage } from "@/data/character-asset-manifest";
 import { cn } from "@/lib/cn";
@@ -72,6 +73,12 @@ export function TimeTheaterDemo() {
     selectedIds.length <= 3 &&
     !!activeTopic &&
     !!selectedViewpoint;
+  const resolvedBackdrop = enrichSharedBackgroundAsset({
+    label: timeTheaterStageMeta.backdropLabel,
+    tone: "jade",
+    description: timeTheaterStageMeta.backdropDescription,
+    backgroundKey: timeTheaterStageMeta.backdropKey,
+  });
 
   const currentLine = scriptPackage?.lines[lineIndex] ?? null;
   const isFinished =
@@ -244,7 +251,8 @@ export function TimeTheaterDemo() {
       return (
         <ImmersiveStageShell
           accent="jade"
-          backgroundLabel={timeTheaterStageMeta.backdropLabel}
+          backgroundLabel={resolvedBackdrop.label}
+          backgroundImage={resolvedBackdrop.image}
           sceneId="time-theater-loading"
           topActions={
             <>
@@ -297,7 +305,8 @@ export function TimeTheaterDemo() {
     return (
       <ImmersiveStageShell
         accent="jade"
-        backgroundLabel={timeTheaterStageMeta.backdropLabel}
+        backgroundLabel={resolvedBackdrop.label}
+        backgroundImage={resolvedBackdrop.image}
         sceneId={`${scriptPackage.topicId}-${lineIndex + 1}`}
         topActions={
           <>

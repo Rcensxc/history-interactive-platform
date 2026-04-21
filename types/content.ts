@@ -6,6 +6,7 @@ export type PlaceholderAsset = {
   description?: string;
   subtitle?: string;
   image?: string;
+  backgroundKey?: string;
   alignment?: "left" | "center" | "right";
 };
 
