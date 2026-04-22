@@ -4,8 +4,8 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: {
-    default: "史境",
-    template: "%s | 史境",
+    default: "百世浏芳",
+    template: "%s | 百世浏芳",
   },
   description: "一个面向普通用户的历史互动小游戏网页试玩原型。",
 };

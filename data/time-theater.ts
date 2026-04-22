@@ -33,7 +33,7 @@ export const timeTheaterTopics: TimeTheaterTopic[] = [
 export const timeTheaterStageMeta = {
   title: "跨时空人物互动剧场试玩页",
   preparationDescription:
-    "先决定谁要同台、谁是你的第一视角、他们正在讨论什么，再进入正式互动场景。当前使用固定舞台和线性播放逻辑，重点是把跨时空讨论的成品体验做稳定。",
+    "在这里，你可以先了解剧场的基本设定和参与角色，然后直接进入剧场体验不同人物的思维碰撞。",
   backdropLabel: "剧场",
   backdropKey: "council-chamber-night",
   backdropDescription:

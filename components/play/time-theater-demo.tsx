@@ -389,8 +389,7 @@ export function TimeTheaterDemo() {
                   选择同台人物
                 </h2>
                 <p className="mt-3 text-sm leading-7 text-stone-300">
-                  当前第一版支持 2 到 3 位人物同台讨论。开始后会由 AI 一次性生成整段线性剧场脚本，
-                  后续只需要点击继续，本地顺序播放。
+                  最多可选择三位历史人物同台讨论，至少需要两位才能开始剧场。
                 </p>
               </div>
 

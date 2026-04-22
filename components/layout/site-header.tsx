@@ -13,12 +13,12 @@ export function SiteHeader() {
       <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-6 py-4 md:px-8">
         <Link href="/" className="flex items-center gap-3">
           <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-amber-200/20 bg-amber-100/10 font-display text-lg text-amber-100">
-            史
+            🌔
           </div>
           <div>
-            <div className="font-display text-lg text-stone-50">史境</div>
+            <div className="font-display text-lg text-stone-50">百世浏芳</div>
             <div className="text-xs tracking-[0.25em] text-stone-400">
-              HISTORY PLAYGROUND
+              互动式历史交互平台
             </div>
           </div>
         </Link>

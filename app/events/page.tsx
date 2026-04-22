@@ -13,7 +13,7 @@ export default function EventsPage() {
         <SectionTitle
           eyebrow="History Events"
           title="历史事件馆"
-          description="从事件进入体验。这里会逐步收纳不同历史事件，并统一汇合到同一套事件准备页与正式剧情页流程中。"
+          description="正式体验历史事件，从不同视角进入现场。"
         />
       </section>
 

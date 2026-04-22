@@ -139,7 +139,7 @@ export function FigureGallery() {
                 </p>
               </div>
               <div className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-stone-300">
-                左侧优先显示游戏立绘，右侧详情图区优先显示历史画作
+                点击左侧人物即可查看详情与相关体验入口
               </div>
             </div>
 
