@@ -11,11 +11,11 @@ export const homeEntries: HomeEntry[] = [
   {
     href: "/figures",
     eyebrow: "人物馆",
-    title: "先认识角色，再决定你想靠近谁",
+    title: "来认识认识你或熟悉或陌生的历史人物",
     description:
       "用卡片和筛选快速浏览人物，了解他们所处的时代、身份和关键事件。",
     cta: "进入历史人物馆",
-    highlight: "6 位首批人物已就位",
+    highlight: "浏览历史人物",
     tone: "bronze",
   },
   {
@@ -23,19 +23,19 @@ export const homeEntries: HomeEntry[] = [
     eyebrow: "事件馆",
     title: "先选历史事件，再决定你想从谁的视角进入现场",
     description:
-      "历史事件馆会逐步收纳不同事件，并统一汇合到事件准备页与正式剧情页。当前第一版已开放鸿门宴。",
+      "历史事件馆收纳不同事件，来选择你想体验哪一件?",
     cta: "进入历史事件馆",
-    highlight: "鸿门宴已开放试玩",
+    highlight: "亲身体验历史事件",
     tone: "crimson",
   },
   {
     href: "/time-theater",
     eyebrow: "跨时空互动",
-    title: "让不同时代的人同台说话，看看他们如何碰撞",
+    title: "让不同时代的人同台说话，看看他们思维的碰撞",
     description:
-      "自由挑选人物、设定视角和讨论主题，体验未来 AI 互动剧场的雏形。",
+      "自由挑选人物、设定视角和讨论主题，体验未来 AI 互动剧场。",
     cta: "进入跨时空剧场",
-    highlight: "支持多人物与主题切换",
+    highlight: "不同时代人物的思维交锋",
     tone: "jade",
   },
 ];

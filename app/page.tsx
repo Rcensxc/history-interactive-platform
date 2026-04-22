@@ -16,10 +16,10 @@ export default function Home() {
                 History Interactive Demo
               </p>
               <h1 className="max-w-3xl font-display text-5xl leading-tight text-stone-50 md:text-7xl">
-                像进入一场展览一样，进入历史现场。
+                亲身进入历史现场。
               </h1>
               <p className="max-w-2xl text-base leading-8 text-stone-300 md:text-lg">
-                这是第一阶段网页试玩版。现在先把页面骨架、统一风格和互动入口搭稳，让用户一打开就能立刻开始浏览人物、进入历史事件馆、体验跨时空同台。
+                我们希望通过沉浸式的互动体验，让历史不再遥远，而是生动、有趣、触手可及的。
               </p>
             </div>
 
@@ -28,13 +28,13 @@ export default function Home() {
                 href="/events"
                 className="rounded-full border border-amber-200/25 bg-amber-100/10 px-5 py-3 text-sm text-amber-50 transition hover:border-amber-200/40 hover:bg-amber-100/15"
               >
-                直接进入历史事件馆
+                进入历史事件馆
               </Link>
               <Link
                 href="/figures"
                 className="rounded-full border border-white/10 bg-white/5 px-5 py-3 text-sm text-stone-200 transition hover:border-white/20 hover:text-stone-50"
               >
-                先进入历史人物馆
+                进入历史人物馆
               </Link>
             </div>
 
@@ -52,8 +52,8 @@ export default function Home() {
         </Panel>
 
         <PlaceholderArt
-          label="史境"
-          caption="主视觉占位图：深色展厅、微光、角色轮廓与通往不同玩法的入口"
+          label="百世浏芳"
+          caption="【封面占位图】"
           tone="amber"
           className="min-h-[520px]"
         />
@@ -66,11 +66,11 @@ export default function Home() {
               Core Entry
             </p>
             <h2 className="mt-3 font-display text-3xl text-stone-50 md:text-4xl">
-              三个核心入口，先把“开始玩”这件事做清楚
+              三种历史体验方式
             </h2>
           </div>
           <p className="max-w-xl text-sm leading-7 text-stone-400">
-            首页不做传统官网式堆信息，而是更像启动页，让玩家很快知道该点哪里、能玩什么。
+            通过不同的入口，你可以选择自己喜欢的历史体验方式。
           </p>
         </div>
 

@@ -54,7 +54,11 @@ const historicalFigureCatalog: Array<Omit<HistoricalFigure, "experienceOptions">
     keywords: ["全局", "筹谋", "稳定节奏"],
     portraitLabel: "蜀",
     portraitTone: "ink",
-    relatedEventIds: ["battle-of-red-cliffs"],
+    relatedEventIds: [
+      "battle-of-red-cliffs",
+      "longzhong-plan",
+      "northern-expeditions",
+    ],
     canJoinTimeTheater: true,
   },
   {
@@ -69,7 +73,7 @@ const historicalFigureCatalog: Array<Omit<HistoricalFigure, "experienceOptions">
     keywords: ["权力", "秩序", "执行力"],
     portraitLabel: "周",
     portraitTone: "jade",
-    relatedEventIds: [],
+    relatedEventIds: ["establish-zhou", "imperial-court-reform"],
     canJoinTimeTheater: true,
   },
   {
@@ -84,7 +88,7 @@ const historicalFigureCatalog: Array<Omit<HistoricalFigure, "experienceOptions">
     keywords: ["表达", "观察", "时代感"],
     portraitLabel: "宋",
     portraitTone: "amber",
-    relatedEventIds: [],
+    relatedEventIds: ["southern-song-migration", "jinshi-legacy"],
     canJoinTimeTheater: true,
   },
   {
@@ -99,7 +103,7 @@ const historicalFigureCatalog: Array<Omit<HistoricalFigure, "experienceOptions">
     keywords: ["行动", "判断", "心学"],
     portraitLabel: "明",
     portraitTone: "ink",
-    relatedEventIds: [],
+    relatedEventIds: ["longchang-enlightenment", "prince-ning-rebellion"],
     canJoinTimeTheater: true,
   },
 ];
@@ -197,35 +201,62 @@ const figureEventRelations: FigureEventRelation[] = [
     figureId: "zhuge-liang",
     eventTitle: "隆中对与北伐",
     summary:
-      "人物馆已经收录诸葛亮的另一条核心事件线索。后续会继续放入事件馆，形成更完整的个人事件路径。",
-    canBeViewpoint: false,
+      "除了赤壁之战，诸葛亮后续最适合补成个人主线的，就是从隆中对到北伐这一整条长期布局。这里先把关系线补齐，后续再进入事件馆。",
+    canBeViewpoint: true,
     isRecommendedViewpoint: false,
   },
   {
-    id: "wuzetian-zhou",
+    id: "wuzetian-establish-zhou",
     figureId: "wuzetian",
     eventTitle: "临朝称制与武周建立",
     summary:
-      "围绕武则天的核心事件会继续放入事件馆。当前人物馆先保留这条事件线索，帮助你从人物档案进入后续体验路径。",
+      "这是武则天最适合先补成事件体验的一条主线。当前先在人物馆里把入口关系和未来第一视角候选补齐，后续再放入事件馆。",
+    canBeViewpoint: true,
+    isRecommendedViewpoint: true,
+  },
+  {
+    id: "wuzetian-court-reform",
+    figureId: "wuzetian",
+    eventTitle: "用人与秩序重建",
+    summary:
+      "除了上位过程，武则天更适合再补一条围绕制度、用人与秩序重建的事件线，让人物路径不只停在权力争夺。",
     canBeViewpoint: false,
     isRecommendedViewpoint: false,
   },
   {
-    id: "liqingzhao-southern-song",
+    id: "liqingzhao-southern-song-migration",
     figureId: "liqingzhao",
-    eventTitle: "南渡词作与金石收藏",
+    eventTitle: "南渡词作与时代失序",
     summary:
-      "人物馆已经收录李清照的代表事件线索。相比单一事件推进，她当前更适合从跨时空互动里展现观察与表达的力量。",
+      "李清照的代表事件更适合从个人感受与时代变局的交界处进入。当前先把这条主线补成关系基础，后续可以发展成可体验视角。",
+    canBeViewpoint: true,
+    isRecommendedViewpoint: true,
+  },
+  {
+    id: "liqingzhao-jinshi-legacy",
+    figureId: "liqingzhao",
+    eventTitle: "金石收藏与记忆保存",
+    summary:
+      "这条线更适合补充她如何面对失去、保存与记录，也能和跨时空剧场里的表达主题自然连起来。",
     canBeViewpoint: false,
     isRecommendedViewpoint: false,
   },
   {
-    id: "wangyangming-longchang",
+    id: "wangyangming-longchang-enlightenment",
     figureId: "wangyangming",
-    eventTitle: "龙场悟道与宁王之乱",
+    eventTitle: "龙场悟道",
     summary:
-      "王阳明的代表事件会继续放进事件馆。当前人物馆先把这条线索留在这里，方便你从人物继续进入更完整的体验。",
-    canBeViewpoint: false,
+      "王阳明最适合先补成事件体验的，是他如何在极端处境中完成判断转变。当前先补关系基础，后续可作为正式第一视角候选。",
+    canBeViewpoint: true,
+    isRecommendedViewpoint: true,
+  },
+  {
+    id: "wangyangming-prince-ning-rebellion",
+    figureId: "wangyangming",
+    eventTitle: "平定宁王之乱",
+    summary:
+      "这条线更适合补他如何把理念落到行动和执行上，和龙场悟道形成前后呼应，但不需要这次就把完整事件做出来。",
+    canBeViewpoint: true,
     isRecommendedViewpoint: false,
   },
 ];
