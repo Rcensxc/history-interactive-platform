@@ -2,6 +2,7 @@ import Link from "next/link";
 import { EntryCard } from "@/components/home/entry-card";
 import { Panel } from "@/components/ui/panel";
 import { PlaceholderArt } from "@/components/ui/placeholder-art";
+import { getSiteHeroImage } from "@/data/site-asset-manifest";
 import { homeEntries, homeHighlights } from "@/data/site-content";
 
 export default function Home() {
@@ -19,7 +20,7 @@ export default function Home() {
                 亲身进入历史现场。
               </h1>
               <p className="max-w-2xl text-base leading-8 text-stone-300 md:text-lg">
-                我们希望通过沉浸式的互动体验，让历史不再遥远，而是生动、有趣、触手可及的。
+                我们希望通过沉浸式的互动体验，让历史不再遥远，而是生动、有趣、触手可及。
               </p>
             </div>
 
@@ -56,6 +57,7 @@ export default function Home() {
           caption="【封面占位图】"
           tone="amber"
           className="min-h-[520px]"
+          imageSrc={getSiteHeroImage()}
         />
       </section>
 
