@@ -101,6 +101,9 @@ export type EventViewpoint = {
   portraitLabel: string;
   portraitTone: Tone;
   isRecommended?: boolean;
+  isPlayable?: boolean;
+  availabilityLabel?: string;
+  availabilityNote?: string;
 };
 
 export type EventStateValue = string | number | boolean;
@@ -234,6 +237,26 @@ export type HongmenAiScriptPackage = {
   protocolVersion: HongmenAiScriptProtocolVersion;
   viewpointId: string;
   beats: HongmenAiScriptBeat[];
+};
+
+export type RedCliffsAiScriptProtocolVersion = "red-cliffs-linear-script-v1";
+
+export type RedCliffsAiScriptLine = {
+  speaker: string;
+  text: string;
+};
+
+export type RedCliffsAiScriptBeat = {
+  beatId: string;
+  lines: RedCliffsAiScriptLine[];
+};
+
+export type RedCliffsAiScriptPackage = {
+  packageId: string;
+  storyId: string;
+  protocolVersion: RedCliffsAiScriptProtocolVersion;
+  viewpointId: string;
+  beats: RedCliffsAiScriptBeat[];
 };
 
 export type AiStructuredSceneProtocolDefinition = {
