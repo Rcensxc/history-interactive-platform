@@ -6,6 +6,7 @@ type PlaceholderArtProps = {
   caption?: string;
   tone?: Tone;
   className?: string;
+  imageSrc?: string;
 };
 
 const toneStyles: Record<Tone, string> = {
@@ -24,6 +25,7 @@ export function PlaceholderArt({
   caption,
   tone = "ink",
   className,
+  imageSrc,
 }: PlaceholderArtProps) {
   return (
     <div
@@ -34,10 +36,14 @@ export function PlaceholderArt({
         className,
       )}
     >
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.08),_transparent_42%),linear-gradient(135deg,rgba(255,255,255,0.1),transparent_60%)]" />
+      {imageSrc ? (
+        <div
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{ backgroundImage: `url("${imageSrc}")` }}
+        />
+      ) : null}
       <div className="relative flex h-full min-h-[160px] flex-col justify-between rounded-[20px] border border-white/10 bg-black/10 p-5">
         <span className="text-xs uppercase tracking-[0.35em] text-stone-300/70">
-          Placeholder
         </span>
         <div>
           <div className="font-display text-5xl text-stone-50">{label}</div>

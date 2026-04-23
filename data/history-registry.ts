@@ -20,7 +20,7 @@ const historicalFigureCatalog: Array<Omit<HistoricalFigure, "experienceOptions">
     dynasty: "西汉",
     role: "君主",
     introduction:
-      "出身平民，却一路从乱世中站上最高位置，善于识人、用人，也很懂得什么时候该退一步。",
+      "刘邦（前256年/前247年—前195年6月1日），字季，‌汉朝开国皇帝‌，沛丰邑中阳里（今江苏省徐州市丰县）人 。他是中国历史上杰出的政治家、战略家和军事家，对汉族发展及国家统一有突出贡献 。‌",
     signatureEvent: "楚汉相争、建立汉朝",
     keywords: ["谋局", "用人", "逆转局势"],
     portraitLabel: "汉",
@@ -35,13 +35,13 @@ const historicalFigureCatalog: Array<Omit<HistoricalFigure, "experienceOptions">
     dynasty: "秦",
     role: "统帅",
     introduction:
-      "以强烈的战场压迫感闻名，气势无双，但也常在情势和判断之间陷入迟疑。",
+      "项羽（前232年―前202年），名籍，字羽，泗水郡下相县（今江苏宿迁）人，祖籍项国 （今河南沈丘与项城 ）。 秦朝末年政治家、军事家，楚国名将项燕的孙子。作为中国军事思想“兵形势”的代表人物，项羽以武力出众而闻名。李晚芳评价“羽之神勇，千古无二”。",
     signatureEvent: "巨鹿之战、鸿门宴",
     keywords: ["强攻", "威势", "抉择压力"],
     portraitLabel: "楚",
     portraitTone: "crimson",
     relatedEventIds: ["hongmen-banquet"],
-    canJoinTimeTheater: false,
+    canJoinTimeTheater: true,
   },
   {
     id: "zhuge-liang",
@@ -50,7 +50,7 @@ const historicalFigureCatalog: Array<Omit<HistoricalFigure, "experienceOptions">
     dynasty: "三国",
     role: "谋臣",
     introduction:
-      "擅长统筹与长线布局，给人的感觉不是张扬，而是始终把局面往可控方向推进。",
+      "诸葛亮（181年—234年10月8日），字孔明，号卧龙，汉族，琅琊阳都（今山东省沂南县）人 ，三国时期蜀汉丞相，中国古代杰出的政治家、军事家、战略家 、发明家、文学家。曾发明木牛流马、孔明灯等，并改造连弩，叫作诸葛连弩，可一弩十矢俱发。 诸葛亮一生“鞠躬尽瘁，死而后已”，是中国传统文化中“忠臣”与“智者”的代表人物。",
     signatureEvent: "隆中对、赤壁之战、北伐",
     keywords: ["全局", "筹谋", "稳定节奏"],
     portraitLabel: "蜀",
@@ -69,13 +69,13 @@ const historicalFigureCatalog: Array<Omit<HistoricalFigure, "experienceOptions">
     dynasty: "三国",
     role: "统帅",
     introduction:
-      "擅长把判断、军心和执行压到同一个节奏上，表面从容，内里对时机和秩序要求极高。",
+      "周瑜(175年-210年)，字公瑾，庐江郡舒县(一说今安徽省庐江县、一说今安徽省舒城县)人。东汉末年军事家、政治家、谋略家、音乐家、东吴名将。  洛阳令周异之子，从祖周景、从父周忠都官至太尉，位列三公。周瑜长壮有姿貌,精通音律 ，当时有“曲有误周郎顾”之语。",
     signatureEvent: "赤壁之战、联刘抗曹",
     keywords: ["统筹", "时机", "主导战局"],
     portraitLabel: "吴",
     portraitTone: "jade",
     relatedEventIds: ["battle-of-red-cliffs"],
-    canJoinTimeTheater: false,
+    canJoinTimeTheater: true,
   },
   {
     id: "huang-gai",
@@ -84,13 +84,13 @@ const historicalFigureCatalog: Array<Omit<HistoricalFigure, "experienceOptions">
     dynasty: "三国",
     role: "将领",
     introduction:
-      "经验老到，真正危险时也敢把自己压上去，最擅长把别人不敢承担的那一步做成局势转折。",
+      "黄盖（生卒年不详），字公覆，零陵郡泉陵县（今湖南省永州市）人。汉末三国时期孙吴将领。",
     signatureEvent: "苦肉计、赤壁之战",
     keywords: ["执行", "冒险", "火攻"],
-    portraitLabel: "火",
+    portraitLabel: "吴",
     portraitTone: "crimson",
     relatedEventIds: ["battle-of-red-cliffs"],
-    canJoinTimeTheater: false,
+    canJoinTimeTheater: true,
   },
   {
     id: "wuzetian",
@@ -99,7 +99,7 @@ const historicalFigureCatalog: Array<Omit<HistoricalFigure, "experienceOptions">
     dynasty: "唐周",
     role: "君主",
     introduction:
-      "在复杂权力结构中完成上位与治理，做事强势直接，同时非常清楚制度如何塑造秩序。",
+      "武曌[zhào]（624年―705年12月16日），别名武则天，并州文水（今山西省文水县）人。唐朝至武周时期政治家，武周开国君主（690年10月16日—705年2月23日在位 ）。荆州都督武士彟次女。武则天前后当政四十余年，是中国历史上唯一的正统女皇帝 。她开创的时代，上承贞观之治，下启开元盛世，被认为是走向盛唐的重要环节 。她多智略，兼涉文史，颇有诗才。著有《垂拱集》《金轮集》等，今已佚",
     signatureEvent: "临朝称制、建立武周",
     keywords: ["权力", "秩序", "执行力"],
     portraitLabel: "周",
@@ -114,7 +114,7 @@ const historicalFigureCatalog: Array<Omit<HistoricalFigure, "experienceOptions">
     dynasty: "宋",
     role: "文人",
     introduction:
-      "她的作品把个人感受与时代风雨连接在一起，柔和不代表脆弱，反而非常有穿透力。",
+      "李清照（1084年3月13日—1155年），女，别名李易安，号易安居士，齐州章丘（今山东省济南市章丘区）人。宋代婉约派代表词人。李清照所作词前期多写悠闲生活，后期悲叹身世，善用白描手法，语言清丽，反对以作诗文之法作词。其词自成“易安体”，被宋代词人效仿。 能诗文，部分篇章感时咏史，情辞慷慨。",
     signatureEvent: "南渡词作、金石收藏",
     keywords: ["表达", "观察", "时代感"],
     portraitLabel: "宋",
@@ -129,7 +129,7 @@ const historicalFigureCatalog: Array<Omit<HistoricalFigure, "experienceOptions">
     dynasty: "明",
     role: "思想家",
     introduction:
-      "既能讲理念，也能在现实局面中解决问题，强调行动和判断要能真正落地。",
+      "王守仁（1472年10月31日－1529年1月9日），字伯安，幼名云，5岁时改名守仁 ，号阳明先生 ，又号乐山居士 。浙江余姚人，出生于余姚北城（今浙江省宁波市余姚市阳明街道） 。是南京吏部尚书王华之子、主观唯心主义宗师陆九渊的继承人，明代著名哲学家、思想家、教育家和军事家 ，心学集大成者 。与儒学创始人孔子、儒学集大成者孟子、理学集大成者朱熹 并称为“孔孟朱王”",
     signatureEvent: "龙场悟道、平定宁王之乱",
     keywords: ["行动", "判断", "心学"],
     portraitLabel: "明",
@@ -152,7 +152,7 @@ const historicalEventCatalog: HistoricalEvent[] = [
       "刘邦入关后，局势骤然变得敏感。鸿门宴不是简单赴宴，而是一场所有人都知道危险存在、却还要维持表面体面的会面。",
     backdropLabel: "鸿门",
     backdropDescription:
-      "背景占位图：夜色、营帐、火光与酒器，礼数与杀机在同一张席面上并排出现。",
+      "",
     availableViewpointIds: ["liubang", "xiangyu"],
     recommendedViewpointIds: ["liubang"],
     hasPlayableStory: true,
@@ -170,7 +170,7 @@ const historicalEventCatalog: HistoricalEvent[] = [
       "曹军南下后，孙刘联盟必须在极短时间内完成判断、布局与执行。赤壁并不只是大战开打的那一刻，更是火攻成形之前每一步试探与决断的累积。",
     backdropLabel: "赤壁",
     backdropDescription:
-      "背景占位图：江面夜色、联军战船、风向变化与火光未起前的压迫感。",
+      "",
     availableViewpointIds: ["zhouyu", "zhuge-liang", "huang-gai"],
     recommendedViewpointIds: ["zhuge-liang"],
     hasPlayableStory: true,
@@ -191,7 +191,7 @@ const historicalEventCatalog: HistoricalEvent[] = [
       "背景占位图：朝堂、法令与秩序重建的冷峻气氛。",
     availableViewpointIds: [],
     recommendedViewpointIds: [],
-    hasPlayableStory: false,
+    hasPlayableStory: true,
     backdropTone: "ink",
   },
 ];
@@ -462,7 +462,7 @@ const redCliffsSpeakerVisualMap: Record<string, EventSpeakerVisual> = {
     alignment: "left",
   },
   "huang-gai": {
-    label: "火",
+    label: "吴",
     tone: "crimson",
     subtitle: "火攻执行者",
     alignment: "center",
@@ -522,7 +522,7 @@ const eventStoryCatalog: Record<string, EventPlayableContent> = {
       label: "鸿门",
       tone: "crimson",
       description:
-        "背景占位图：夜色、营帐、火光与酒器，礼数与杀机在同一张席面上并排出现。",
+        "",
     },
     viewpoints: hongmenViewpoints,
     speakerVisuals: hongmenSpeakerVisualMap,
@@ -537,7 +537,7 @@ const eventStoryCatalog: Record<string, EventPlayableContent> = {
           label: "鸿门",
           tone: "crimson",
           description:
-            "背景占位图：夜色、营帐、火光与酒器，礼数与杀机在同一张席面上并排出现。",
+            "",
         },
         text:
           "夜色压在营地上，火光映着酒器和兵刃。你知道这不是普通宴席，而是一场带着试探意味的会面。",

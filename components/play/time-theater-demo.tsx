@@ -3,6 +3,7 @@
 import { useMemo, useRef, useState } from "react";
 import {
   defaultTimeTheaterSelection,
+  timeTheaterCastIds,
   timeTheaterStageMeta,
   timeTheaterTopics,
 } from "@/data/time-theater";
@@ -43,13 +44,25 @@ type TriggerSource = "initial" | "reset";
 
 export function TimeTheaterDemo() {
   const cast = useMemo(
-    () => historicalFigures.filter((figure) => figure.canJoinTimeTheater),
+    () => historicalFigures.filter((figure) => timeTheaterCastIds.includes(figure.id)),
     [],
   );
 
+  const initialSelection = useMemo(() => {
+    const preferred = defaultTimeTheaterSelection.filter((id) =>
+      cast.some((figure) => figure.id === id),
+    );
+
+    if (preferred.length >= 2) {
+      return preferred.slice(0, 3);
+    }
+
+    return cast.slice(0, 3).map((figure) => figure.id);
+  }, [cast]);
+
   const [mode, setMode] = useState<"prepare" | "story">("prepare");
-  const [selectedIds, setSelectedIds] = useState(defaultTimeTheaterSelection);
-  const [viewpointId, setViewpointId] = useState(defaultTimeTheaterSelection[0]);
+  const [selectedIds, setSelectedIds] = useState(initialSelection);
+  const [viewpointId, setViewpointId] = useState(initialSelection[0] ?? "");
   const [topicId, setTopicId] = useState(timeTheaterTopics[0]?.id ?? "");
   const [scriptPackage, setScriptPackage] = useState<TimeTheaterAiScriptPackage | null>(null);
   const [lineIndex, setLineIndex] = useState(0);

@@ -7,14 +7,16 @@ import {
   eventStatuses,
   historicalEvents,
 } from "@/data/history-registry";
+import { getEventCoverImage } from "@/data/site-asset-manifest";
 import { cn } from "@/lib/cn";
 import { Panel } from "@/components/ui/panel";
 import { PlaceholderArt } from "@/components/ui/placeholder-art";
 
 const statusStyles: Record<string, string> = {
-  "已开放试玩": "border-emerald-200/25 bg-emerald-100/10 text-emerald-100",
-  "即将开放": "border-amber-200/25 bg-amber-100/10 text-amber-50",
-  "计划中": "border-white/10 bg-white/5 text-stone-300",
+  已开放试玩:
+    "border-emerald-200/25 bg-emerald-100/10 text-emerald-100",
+  即将开放: "border-amber-200/25 bg-amber-100/10 text-amber-50",
+  计划中: "border-white/10 bg-white/5 text-stone-300",
 };
 
 export function EventHall() {
@@ -132,6 +134,7 @@ export function EventHall() {
                       caption={`${eventItem.era} · ${eventItem.category}`}
                       tone={eventItem.status === "playable" ? "crimson" : "ink"}
                       className="min-h-[190px]"
+                      imageSrc={getEventCoverImage(eventItem.id)}
                     />
                     <div className="space-y-3">
                       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -185,6 +188,7 @@ export function EventHall() {
               caption={selectedEvent.backdropDescription}
               tone={selectedEvent.status === "playable" ? "crimson" : "ink"}
               className="min-h-[260px]"
+              imageSrc={getEventCoverImage(selectedEvent.id)}
             />
 
             <div className="space-y-4 text-sm leading-7 text-stone-300">
