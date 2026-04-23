@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import {
   generateRedCliffsAiStoryPackage,
   RED_CLIFFS_AI_EVENT_ID,
-  RED_CLIFFS_AI_VIEWPOINT_ID,
+  shouldUseRedCliffsAiMode,
   type RedCliffsAiStoryPackageRequest,
 } from "@/lib/red-cliffs-ai";
 
@@ -25,7 +25,7 @@ export async function POST(request: Request) {
   if (
     !payload ||
     payload.eventId !== RED_CLIFFS_AI_EVENT_ID ||
-    payload.viewpointId !== RED_CLIFFS_AI_VIEWPOINT_ID ||
+    !shouldUseRedCliffsAiMode(payload.eventId, payload.viewpointId) ||
     (payload.triggerSource !== undefined &&
       payload.triggerSource !== "initial" &&
       payload.triggerSource !== "reset")
@@ -33,7 +33,8 @@ export async function POST(request: Request) {
     return NextResponse.json(
       {
         ok: false,
-        error: "当前接口只支持赤壁之战诸葛亮视角的整包剧情生成请求。",
+        error:
+          "当前接口只支持赤壁之战的诸葛亮、周瑜、黄盖三条整包剧情生成请求。",
       },
       { status: 400 },
     );
@@ -55,6 +56,7 @@ export async function POST(request: Request) {
     requestId: result.debug?.requestId ?? payload.clientRequestId ?? "unknown",
     packageMode: "full-story-package",
     triggerSource: payload.triggerSource ?? "unknown",
+    viewpointId: payload.viewpointId,
     timings: result.debug?.timings,
     metrics: result.debug?.metrics,
     source: result.source,
