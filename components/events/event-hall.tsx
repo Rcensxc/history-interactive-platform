@@ -216,7 +216,7 @@ export function EventHall() {
                 从事件进入体验
               </h3>
               <p className="mt-3 text-sm leading-7 text-stone-300">
-                先看事件，再去选择第一视角人物。后续所有可试玩事件都会汇合到统一的事件准备页。
+                先看事件，再去选择第一视角人物。
               </p>
 
               <div className="mt-5">

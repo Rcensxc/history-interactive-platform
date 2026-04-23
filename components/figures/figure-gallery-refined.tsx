@@ -321,7 +321,7 @@ export function FigureGallery() {
                     从这个人物继续进入体验
                   </h3>
                   <p className="mt-3 max-w-2xl text-sm leading-7 text-stone-300">
-                    主路径先从相关历史事件进入这位人物所处的关键局面；跨时空互动则用于观察他在另一种玩法里的表达、判断与立场。
+                    先从相关历史事件进入这位人物所处的关键局面；跨时空互动则用于观察他在另一种玩法里的表达、判断与立场。
                   </p>
                 </div>
 
