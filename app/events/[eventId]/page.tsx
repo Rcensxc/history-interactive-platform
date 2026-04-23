@@ -45,7 +45,8 @@ export default async function EventPreparationPage({
   const preferredFigureSelectable =
     !!query.viewpoint &&
     !!preparationData?.viewpoints.some(
-      (viewpoint) => viewpoint.id === query.viewpoint,
+      (viewpoint) =>
+        viewpoint.id === query.viewpoint && viewpoint.isPlayable !== false,
     );
 
   return (

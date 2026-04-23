@@ -1,4 +1,5 @@
 ﻿import type {
+  AiStructuredStoryOutput,
   EventPlayableContent,
   EventPreparationData,
   EventSpeakerVisual,
@@ -7,9 +8,9 @@
   FigureExperienceOption,
   HistoricalEvent,
   HistoricalFigure,
+  PlaceholderAsset,
 } from "@/types/content";
 import { createEventPlayableContent } from "@/lib/event-story-runtime";
-import { redCliffsMockAiStoryOutput } from "@/data/mock-ai-scene-output";
 
 const historicalFigureCatalog: Array<Omit<HistoricalFigure, "experienceOptions">> = [
   {
@@ -141,7 +142,7 @@ const historicalEventCatalog: HistoricalEvent[] = [
     backdropDescription:
       "背景占位图：江面夜色、联军战船、风向变化与火光未起前的压迫感。",
     availableViewpointIds: ["zhouyu", "zhuge-liang", "huang-gai"],
-    recommendedViewpointIds: ["zhouyu", "zhuge-liang"],
+    recommendedViewpointIds: ["zhuge-liang"],
     hasPlayableStory: true,
     backdropTone: "ink",
   },
@@ -192,7 +193,7 @@ const figureEventRelations: FigureEventRelation[] = [
     eventId: "battle-of-red-cliffs",
     eventTitle: "赤壁之战",
     summary:
-      "从赤壁之战进入联盟成形后的关键决断现场。进入事件准备页后，会直接为你预选诸葛亮视角。",
+      "从赤壁之战进入联盟成形后的关键决断现场。进入事件准备页后，会直接为你预选诸葛亮视角，并进入当前已完整支持的主路径。",
     canBeViewpoint: true,
     isRecommendedViewpoint: true,
   },
@@ -290,6 +291,7 @@ const hongmenViewpoints: EventViewpoint[] = [
 const redCliffsViewpoints: EventViewpoint[] = [
   {
     id: "zhouyu",
+    figureId: "zhouyu",
     name: "周瑜",
     title: "统帅视角",
     summary: "你要把联盟、军心和战术压到同一个时间点上，任何一步失衡都会让整场布局失去意义。",
@@ -297,7 +299,10 @@ const redCliffsViewpoints: EventViewpoint[] = [
     pressure: "风向、军心和对手的误判都必须同时落位。",
     portraitLabel: "吴",
     portraitTone: "jade",
-    isRecommended: true,
+    isPlayable: false,
+    availabilityLabel: "后续扩展视角",
+    availabilityNote:
+      "周瑜视角会继续保留在准备页中，但这次样板先只重点保证诸葛亮视角的完整体验链路。",
   },
   {
     id: "zhuge-liang",
@@ -310,9 +315,11 @@ const redCliffsViewpoints: EventViewpoint[] = [
     portraitLabel: "蜀",
     portraitTone: "ink",
     isRecommended: true,
+    isPlayable: true,
   },
   {
     id: "huang-gai",
+    figureId: "huang-gai",
     name: "黄盖",
     title: "执行者视角",
     summary: "你知道这场胜负最后会落到执行上，真正危险的不是计谋本身，而是自己能否撑到最后一步。",
@@ -320,6 +327,10 @@ const redCliffsViewpoints: EventViewpoint[] = [
     pressure: "只要你露出一点破绽，整场火攻都会提前崩掉。",
     portraitLabel: "火",
     portraitTone: "crimson",
+    isPlayable: false,
+    availabilityLabel: "后续扩展视角",
+    availabilityNote:
+      "黄盖视角当前先保留入口，用于后续扩展执行者路线。这次不会假装已经补成同等完整度。",
   },
 ];
 
@@ -561,8 +572,6 @@ const eventStoryCatalog: Record<string, EventPlayableContent> = {
   "battle-of-red-cliffs": createEventPlayableContent({
     eventId: "battle-of-red-cliffs",
     initialSceneId: "river-night",
-    aiOutput: redCliffsMockAiStoryOutput,
-    backgrounds: redCliffsAiBackdropMap,
     defaultBackdrop: {
       label: "赤壁",
       tone: "ink",
@@ -583,7 +592,7 @@ const eventStoryCatalog: Record<string, EventPlayableContent> = {
           description: "背景占位图：江面夜色、联军战船与风向未定时的压迫感。",
         },
         text:
-          "江面暂时还很安静，但每个人都知道，真正决定胜负的不是明天会不会开战，而是今夜有没有把火攻前的每一步都安排妥当。",
+          "江面一时还很安静，可真正让人无法松气的，不是明天会不会开战，而是今夜每一步安排有没有真的落稳。",
         nextSceneId: "zhouyu-briefing",
       },
       {
@@ -592,8 +601,9 @@ const eventStoryCatalog: Record<string, EventPlayableContent> = {
         speaker: "周瑜",
         speakerId: "zhouyu",
         visualKey: "zhouyu",
+        background: redCliffsAiBackdropMap["command-tent"],
         text:
-          "曹军船多、人众、气势正盛，但正因为如此，他们更相信自己不会输。只要判断准确，越笃定的对手，越容易在关键时刻出错。",
+          "曹军越觉得自己必胜，我们越不能急。真正要抓的是他们最松、却还没意识到危险已近的那一刻。",
         nextSceneId: "zhuge-liang-response",
       },
       {
@@ -602,38 +612,21 @@ const eventStoryCatalog: Record<string, EventPlayableContent> = {
         speaker: "诸葛亮",
         speakerId: "zhuge-liang",
         visualKey: "zhuge-liang",
+        background: redCliffsAiBackdropMap["strategy-table"],
         text:
-          "真正要抓住的，不只是敌军松懈的一刻，而是风向、军心和联盟内部的信任能否在同一刻站到我们这边。",
-        nextSceneId: "fire-attack-choice",
+          "真正要对齐的，不只是风向，还有军心、联盟默契和执行时机。只要其中一步慢半拍，火就起不成势。",
+        nextSceneId: "pressure-window",
       },
       {
-        id: "fire-attack-choice",
-        type: "decision",
-        speaker: "关键抉择",
-        speakerId: "decision",
-        visualKey: "decision",
-        text: "火攻前夜，你会先把哪一步放到最前面？",
-        choices: [
-          {
-            id: "historic-timing",
-            label: "优先等风向彻底稳定，再推进火攻",
-            outcome: "你把所有动作都压到最稳的时机上，虽然更慢，但更接近历史中的关键判断。",
-            isHistorical: true,
-            nextSceneId: "huang-gai-execution",
-          },
-          {
-            id: "alliance-first",
-            label: "先把联盟内部口径完全统一，再推进执行",
-            outcome: "你让局面更稳了，但也把战机往后推了一步。",
-            nextSceneId: "huang-gai-execution",
-          },
-          {
-            id: "strike-early",
-            label: "趁对手松懈，提前把计划推到最前",
-            outcome: "你抢到了速度，但任何环节露出破绽，代价都会被放大。",
-            nextSceneId: "huang-gai-execution",
-          },
-        ],
+        id: "pressure-window",
+        type: "narration",
+        speaker: "旁白",
+        speakerId: "narration",
+        visualKey: "narration",
+        background: redCliffsAiBackdropMap["strategy-table"],
+        text:
+          "帐中灯火压得很低。你知道眼下最危险的不是没有计策，而是所有人都得在同一瞬间相信，这一步真的值得赌。",
+        nextSceneId: "huang-gai-execution",
       },
       {
         id: "huang-gai-execution",
@@ -641,8 +634,20 @@ const eventStoryCatalog: Record<string, EventPlayableContent> = {
         speaker: "黄盖",
         speakerId: "huang-gai",
         visualKey: "huang-gai",
+        background: redCliffsAiBackdropMap["departure-dock"],
         text:
-          "计策再好，最后也得有人把最危险的一步真的走出去。只要我这一步不像真的，整场火攻就会在点燃之前先被看穿。",
+          "到最后，总得有人把最险的一步真的走出去。若我不像真的要去送命，曹军就不会真把门打开。",
+        nextSceneId: "launch-window",
+      },
+      {
+        id: "launch-window",
+        type: "narration",
+        speaker: "旁白",
+        speakerId: "narration",
+        visualKey: "narration",
+        background: redCliffsAiBackdropMap["departure-dock"],
+        text:
+          "江风终于转了。那一刻你没有多说，只把之前所有分散的判断重新压成同一个答案：现在，必须动。",
         nextSceneId: "red-cliffs-ending",
       },
       {
@@ -651,8 +656,9 @@ const eventStoryCatalog: Record<string, EventPlayableContent> = {
         speaker: "收束",
         speakerId: "ending",
         visualKey: "ending",
+        background: redCliffsAiBackdropMap["embers-aftermath"],
         text:
-          "赤壁之战最迷人的地方，不只是大火烧船的那一幕，而是所有关键判断都必须在火光亮起之前就完成。真正的胜负，往往先决定于看不见的那一段时间。",
+          "赤壁真正惊险的地方，不只是火光照亮江面的那一瞬，而是在那之前，所有人都必须先把看不见的那段时间算准。",
       },
     ],
   }),
@@ -789,13 +795,14 @@ const hongmenEvent = historicalEventCatalog.find(
 const hongmenPlayableContent = eventStoryCatalog["hongmen-banquet"];
 
 export const eventPlayableContent = eventStoryCatalog;
-export const aiStructuredStoryFixtures = {
-  "battle-of-red-cliffs": {
-    output: redCliffsMockAiStoryOutput,
-    backgrounds: redCliffsAiBackdropMap,
-    speakerVisuals: redCliffsSpeakerVisualMap,
-  },
-} as const;
+export const aiStructuredStoryFixtures: Record<
+  string,
+  {
+    output: AiStructuredStoryOutput;
+    backgrounds: Record<string, PlaceholderAsset>;
+    speakerVisuals: Record<string, EventSpeakerVisual>;
+  }
+> = {};
 
 export const hongmenRoles = hongmenPlayableContent?.viewpoints ?? [];
 

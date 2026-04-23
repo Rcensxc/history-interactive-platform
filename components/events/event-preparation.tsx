@@ -19,6 +19,7 @@ type EventPreparationProps = {
 
 type ViewpointOptionCardProps = {
   active: boolean;
+  isPlayable: boolean;
   figureId?: string;
   name: string;
   title: string;
@@ -27,6 +28,8 @@ type ViewpointOptionCardProps = {
   portraitLabel: string;
   portraitTone: Tone;
   isRecommended?: boolean;
+  availabilityLabel?: string;
+  availabilityNote?: string;
   onSelect: () => void;
 };
 
@@ -58,11 +61,13 @@ const TEXT = {
   startExperience: "\u5f00\u59cb\u4f53\u9a8c",
   notPlayableYet: "\u5f53\u524d\u4e8b\u4ef6\u6682\u672a\u5f00\u653e\u6b63\u5f0f\u4f53\u9a8c",
   recommendedViewpoint: "\u63a8\u8350\u89c6\u89d2",
+  viewpointComingSoon: "\u5f53\u524d\u4ec5\u4f5c\u4e3a\u9884\u7559\u89c6\u89d2",
   standeeCaptionSeparator: "\u00b7",
 } as const;
 
 function ViewpointOptionCard({
   active,
+  isPlayable,
   figureId,
   name,
   title,
@@ -71,14 +76,25 @@ function ViewpointOptionCard({
   portraitLabel,
   portraitTone,
   isRecommended = false,
+  availabilityLabel,
+  availabilityNote,
   onSelect,
 }: ViewpointOptionCardProps) {
   return (
-    <button type="button" onClick={onSelect} className="w-full text-left">
+    <button
+      type="button"
+      onClick={onSelect}
+      disabled={!isPlayable}
+      className="w-full text-left disabled:cursor-not-allowed"
+    >
       <Panel
         className={cn(
           "p-5 transition-colors",
-          active ? "border-amber-200/25 bg-amber-100/8" : "hover:border-white/20",
+          active && isPlayable
+            ? "border-amber-200/25 bg-amber-100/8"
+            : isPlayable
+              ? "hover:border-white/20"
+              : "border-white/8 bg-white/[0.03] opacity-80",
         )}
       >
         <div className="grid gap-5 md:grid-cols-[11rem_minmax(0,1fr)]">
@@ -102,6 +118,11 @@ function ViewpointOptionCard({
                   {TEXT.recommendedViewpoint}
                 </span>
               ) : null}
+              {!isPlayable ? (
+                <span className="rounded-full border border-white/10 px-3 py-1 text-xs text-stone-300">
+                  {availabilityLabel ?? TEXT.viewpointComingSoon}
+                </span>
+              ) : null}
             </div>
 
             <p className="text-sm leading-7 text-stone-300">{summary}</p>
@@ -112,6 +133,10 @@ function ViewpointOptionCard({
               </p>
               <p className="mt-2 text-sm leading-7 text-stone-400">{pressure}</p>
             </div>
+
+            {!isPlayable && availabilityNote ? (
+              <p className="text-xs leading-6 text-stone-400">{availabilityNote}</p>
+            ) : null}
           </div>
         </div>
       </Panel>
@@ -128,12 +153,15 @@ export function EventPreparation({
   const eventItem = preparationData?.event ?? null;
   const viewpoints = preparationData?.viewpoints ?? [];
   const hasPlayableStory = preparationData?.hasPlayableStory ?? false;
+  const playableViewpoints = viewpoints.filter(
+    (viewpoint) => viewpoint.isPlayable !== false,
+  );
 
-  const defaultViewpointId = viewpoints.some(
+  const defaultViewpointId = playableViewpoints.some(
     (viewpoint) => viewpoint.id === initialViewpointId,
   )
     ? (initialViewpointId ?? "")
-    : (viewpoints[0]?.id ?? "");
+    : (playableViewpoints[0]?.id ?? "");
 
   const [selectedViewpointId, setSelectedViewpointId] =
     useState(defaultViewpointId);
@@ -143,8 +171,8 @@ export function EventPreparation({
   }
 
   const selectedViewpoint =
-    viewpoints.find((viewpoint) => viewpoint.id === selectedViewpointId) ??
-    viewpoints[0] ??
+    playableViewpoints.find((viewpoint) => viewpoint.id === selectedViewpointId) ??
+    playableViewpoints[0] ??
     null;
   const isPlayable = hasPlayableStory && !!selectedViewpoint;
 
@@ -241,6 +269,7 @@ export function EventPreparation({
                       <ViewpointOptionCard
                         key={viewpoint.id}
                         active={active}
+                        isPlayable={viewpoint.isPlayable !== false}
                         figureId={viewpoint.figureId}
                         name={viewpoint.name}
                         title={viewpoint.title}
@@ -249,7 +278,14 @@ export function EventPreparation({
                         portraitLabel={viewpoint.portraitLabel}
                         portraitTone={viewpoint.portraitTone}
                         isRecommended={viewpoint.isRecommended}
-                        onSelect={() => setSelectedViewpointId(viewpoint.id)}
+                        availabilityLabel={viewpoint.availabilityLabel}
+                        availabilityNote={viewpoint.availabilityNote}
+                        onSelect={() => {
+                          if (viewpoint.isPlayable === false) {
+                            return;
+                          }
+                          setSelectedViewpointId(viewpoint.id);
+                        }}
                       />
                     );
                   })}
