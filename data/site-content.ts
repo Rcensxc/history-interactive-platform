@@ -41,7 +41,7 @@ export const homeEntries: HomeEntry[] = [
 ];
 
 export const homeHighlights = [
-  "沉浸式首页主视觉",
-  "统一的深色展陈风格",
-  "四个页面基础骨架已规划",
+  "拓展按钮",
+  "拓展按钮",
+  "拓展按钮",
 ];

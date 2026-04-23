@@ -23,7 +23,7 @@ export default function RootLayout({
           <SiteHeader />
           <main className="relative z-10">{children}</main>
           <footer className="relative z-10 border-t border-white/8 px-6 py-6 text-center text-sm text-stone-500 md:px-8">
-            第一阶段试玩原型 · 当前使用假数据与占位视觉，不接真实 AI
+            底部说明信息
           </footer>
         </div>
       </body>

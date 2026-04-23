@@ -67,10 +67,11 @@ export function RedCliffsAiStoryPlayer({
     playableContent.viewpoints.find((viewpoint) => viewpoint.isPlayable !== false) ??
     playableContent.viewpoints[0] ??
     null;
-  const [scriptPackage, setScriptPackage] = useState<RedCliffsAiScriptPackage | null>(null);
-  const [activePlayableContent, setActivePlayableContent] = useState<EventPlayableContent | null>(
+  const [scriptPackage, setScriptPackage] = useState<RedCliffsAiScriptPackage | null>(
     null,
   );
+  const [activePlayableContent, setActivePlayableContent] =
+    useState<EventPlayableContent | null>(null);
   const [currentSceneId, setCurrentSceneId] = useState("");
   const [choices, setChoices] = useState<Record<string, EventChoice>>({});
   const [statusMessage, setStatusMessage] = useState("");
@@ -372,7 +373,9 @@ export function RedCliffsAiStoryPlayer({
       speakerBadge={
         showSpeakerName ? (
           <div className="inline-flex rounded-[16px] border border-amber-200/18 bg-amber-100/8 px-4 py-2">
-            <p className="font-display text-lg text-amber-50 md:text-xl">{currentScene.speaker}</p>
+            <p className="font-display text-lg text-amber-50 md:text-xl">
+              {currentScene.speaker}
+            </p>
           </div>
         ) : undefined
       }
@@ -399,7 +402,9 @@ export function RedCliffsAiStoryPlayer({
                         历史走向
                       </span>
                     ) : (
-                      <span className="text-stone-500 transition group-hover:text-stone-300">›</span>
+                      <span className="text-stone-500 transition group-hover:text-stone-300">
+                        ›
+                      </span>
                     )}
                   </div>
                 </button>

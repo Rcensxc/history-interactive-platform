@@ -63,6 +63,36 @@ const historicalFigureCatalog: Array<Omit<HistoricalFigure, "experienceOptions">
     canJoinTimeTheater: true,
   },
   {
+    id: "zhouyu",
+    name: "周瑜",
+    title: "东吴都督",
+    dynasty: "三国",
+    role: "统帅",
+    introduction:
+      "擅长把判断、军心和执行压到同一个节奏上，表面从容，内里对时机和秩序要求极高。",
+    signatureEvent: "赤壁之战、联刘抗曹",
+    keywords: ["统筹", "时机", "主导战局"],
+    portraitLabel: "吴",
+    portraitTone: "jade",
+    relatedEventIds: ["battle-of-red-cliffs"],
+    canJoinTimeTheater: false,
+  },
+  {
+    id: "huang-gai",
+    name: "黄盖",
+    title: "东吴老将",
+    dynasty: "三国",
+    role: "将领",
+    introduction:
+      "经验老到，真正危险时也敢把自己压上去，最擅长把别人不敢承担的那一步做成局势转折。",
+    signatureEvent: "苦肉计、赤壁之战",
+    keywords: ["执行", "冒险", "火攻"],
+    portraitLabel: "火",
+    portraitTone: "crimson",
+    relatedEventIds: ["battle-of-red-cliffs"],
+    canJoinTimeTheater: false,
+  },
+  {
     id: "wuzetian",
     name: "武则天",
     title: "大周皇帝",
@@ -198,6 +228,44 @@ const figureEventRelations: FigureEventRelation[] = [
     isRecommendedViewpoint: true,
   },
   {
+    id: "zhouyu-red-cliffs",
+    figureId: "zhouyu",
+    eventId: "battle-of-red-cliffs",
+    eventTitle: "赤壁之战",
+    summary:
+      "从赤壁之战进入联军主导者的调度现场。进入事件准备页后，会直接为你预选周瑜视角，并进入当前已完整支持的正式主线。",
+    canBeViewpoint: true,
+    isRecommendedViewpoint: true,
+  },
+  {
+    id: "zhouyu-alliance-command",
+    figureId: "zhouyu",
+    eventTitle: "联吴抗曹与火攻主导",
+    summary:
+      "除了赤壁之战本体，周瑜后续也适合继续扩成一条围绕联盟掌控、战局调度和火攻主导的个人事件线。",
+    canBeViewpoint: true,
+    isRecommendedViewpoint: false,
+  },
+  {
+    id: "huang-gai-red-cliffs",
+    figureId: "huang-gai",
+    eventId: "battle-of-red-cliffs",
+    eventTitle: "赤壁之战",
+    summary:
+      "从赤壁之战进入最危险的一环执行现场。进入事件准备页后，会直接为你预选黄盖视角，并进入当前已完整支持的正式主线。",
+    canBeViewpoint: true,
+    isRecommendedViewpoint: true,
+  },
+  {
+    id: "huang-gai-risk-commitment",
+    figureId: "huang-gai",
+    eventTitle: "苦肉计与火攻执行",
+    summary:
+      "黄盖最适合继续扩成的，是一条围绕苦肉计、以身入局和执行压力展开的个人事件线，这次先把关系基础补齐。",
+    canBeViewpoint: true,
+    isRecommendedViewpoint: false,
+  },
+  {
     id: "zhuge-liang-longzhong",
     figureId: "zhuge-liang",
     eventTitle: "隆中对与北伐",
@@ -296,13 +364,11 @@ const redCliffsViewpoints: EventViewpoint[] = [
     title: "统帅视角",
     summary: "你要把联盟、军心和战术压到同一个时间点上，任何一步失衡都会让整场布局失去意义。",
     perspective: "你关心的不是单一奇谋，而是如何让每个环节在同一刻成立。",
-    pressure: "风向、军心和对手的误判都必须同时落位。",
+    pressure: "风向、军心和对手的误判都必须同时落位，你还得稳住全军对你的信任。",
     portraitLabel: "吴",
     portraitTone: "jade",
-    isPlayable: false,
-    availabilityLabel: "后续扩展视角",
-    availabilityNote:
-      "周瑜视角会继续保留在准备页中，但这次样板先只重点保证诸葛亮视角的完整体验链路。",
+    isRecommended: true,
+    isPlayable: true,
   },
   {
     id: "zhuge-liang",
@@ -324,13 +390,10 @@ const redCliffsViewpoints: EventViewpoint[] = [
     title: "执行者视角",
     summary: "你知道这场胜负最后会落到执行上，真正危险的不是计谋本身，而是自己能否撑到最后一步。",
     perspective: "你的任务是把最危险的一步做成最像真的一幕。",
-    pressure: "只要你露出一点破绽，整场火攻都会提前崩掉。",
+    pressure: "只要你露出一点破绽，整场火攻都会提前崩掉，你自己也未必还能全身而退。",
     portraitLabel: "火",
     portraitTone: "crimson",
-    isPlayable: false,
-    availabilityLabel: "后续扩展视角",
-    availabilityNote:
-      "黄盖视角当前先保留入口，用于后续扩展执行者路线。这次不会假装已经补成同等完整度。",
+    isPlayable: true,
   },
 ];
 
