@@ -514,13 +514,13 @@ export function TimeTheaterDemo() {
                   className="min-h-[250px]"
                 />
                 <div className="rounded-[24px] border border-white/10 bg-white/5 p-5">
-                  <p className="text-sm text-stone-400">当前剧场的本地控制内容</p>
+                  <p className="text-sm text-stone-400">当前剧场</p>
                   <div className="mt-4 space-y-3 text-sm leading-7 text-stone-200">
-                    <p>1. 背景与舞台壳固定在本地</p>
-                    <p>2. 立绘显示规则固定在本地</p>
-                    <p>3. 点击继续顺序推进</p>
-                    <p>4. AI 只负责一次性生成整段讨论脚本</p>
-                    <p>5. 失败时自动回退到本地预设试玩内容</p>
+                    <p>1.</p>
+                    <p>2. </p>
+                    <p>3.</p>
+                    <p>4.</p>
+                    <p>5.</p>
                   </div>
                 </div>
               </div>

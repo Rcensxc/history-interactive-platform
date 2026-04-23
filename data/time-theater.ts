@@ -1,4 +1,4 @@
-import type { TimeTheaterTopic } from "@/types/content";
+﻿import type { TimeTheaterTopic } from "@/types/content";
 import { timeTheaterEligibleFigureIds } from "@/data/history-registry";
 
 export const timeTheaterCastIds = timeTheaterEligibleFigureIds;
@@ -39,5 +39,5 @@ export const timeTheaterStageMeta = {
   backdropLabel: "剧场",
   backdropKey: "council-chamber-night",
   backdropDescription:
-    "背景占位图：深色长桌、低光舞台、跨时代人物同席而坐，气氛更像一场被刻意安排的历史会谈。",
+    "",
 };
