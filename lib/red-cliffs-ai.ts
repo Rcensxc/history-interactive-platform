@@ -29,12 +29,15 @@ const RED_CLIFFS_AI_SCRIPT_PROTOCOL_VERSION =
   "red-cliffs-linear-script-v1" as const;
 
 type RedCliffsBeatId =
-  | "river-watch"
-  | "alliance-briefing"
-  | "timing-pressure"
-  | "huang-gai-commitment"
-  | "launch"
-  | "aftermath";
+  | "cao-army-pressure"
+  | "alliance-doubt"
+  | "joint-decision"
+  | "fire-plan-shaping"
+  | "huang-gai-preparation"
+  | "wind-and-timing"
+  | "fire-attack-launch"
+  | "battle-turning"
+  | "aftermath-review";
 
 type RedCliffsBeatBlueprint = {
   beatId: RedCliffsBeatId;
@@ -51,6 +54,7 @@ type RedCliffsViewpointProfile = {
   title: string;
   narrationRule: string;
   userGoal: string;
+  voiceNotes: string[];
   beatGoals: Record<RedCliffsBeatId, string>;
   fallbackBeats: RedCliffsAiScriptBeat[];
 };
@@ -125,31 +129,37 @@ const redCliffsAiBackdropMap = {
     label: "赤壁",
     tone: "ink",
     description:
-      "背景占位图：江面夜色未动，真正的紧张感压在风向、判断与联盟默契里。",
+      "背景占位图：曹军南下后的江面夜色压得很低，真正的危险先落在风向、判断和联军信心上。",
   },
   "command-tent": {
     label: "联营",
     tone: "ink",
     description:
-      "背景占位图：军帐、烛火与沙盘同处一室，所有部署都在等待同一个时机。",
+      "背景占位图：军帐、烛火与沙盘挤在同一室内，每一句商议都像在把局势往更窄的地方压。",
   },
   "strategy-table": {
     label: "谋局",
     tone: "amber",
     description:
-      "背景占位图：军图摊开，风向、军心和火攻路径都被摆在一张案上。",
+      "背景占位图：军图摊开，风向、战船、诈降与联军信任被同时摆在案上，没有一步能单独成立。",
   },
   "departure-dock": {
     label: "江岸",
     tone: "crimson",
     description:
-      "背景占位图：登船前的江岸安静得过分，真正危险的那一步已经逼到眼前。",
+      "背景占位图：临行前的江岸安静得过分，真正危险的那一步已经不再是谋划，而是人能不能撑着走出去。",
+  },
+  "battle-firelight": {
+    label: "火势",
+    tone: "crimson",
+    description:
+      "背景占位图：火光沿战船铺开，水陆战局在极短时间里被点亮，也被彻底改写。",
   },
   "embers-aftermath": {
-    label: "火光",
+    label: "余烬",
     tone: "amber",
     description:
-      "背景占位图：火势已起，真正值得回看的却是火起之前那一连串判断。",
+      "背景占位图：火势过去后，江面仍有余温，真正值得回看的却是火起之前那一连串不肯松手的判断。",
   },
 } as const satisfies Record<string, PlaceholderAsset>;
 
@@ -165,53 +175,86 @@ const redCliffsSpeakerVisualKeyMap = {
   黄盖: "huang-gai",
 } as const;
 
+const allowedSpeakerNames = [
+  "周瑜",
+  "诸葛亮",
+  "黄盖",
+  "鲁肃",
+  "孙权",
+  "曹操",
+] as const;
+
 const redCliffsBeatBlueprints: RedCliffsBeatBlueprint[] = [
   {
-    beatId: "river-watch",
-    title: "江面观察",
+    beatId: "cao-army-pressure",
+    title: "曹军南下，局势压来",
     backgroundTag: "river-night",
     minLines: 2,
     maxLines: 3,
     allowNarration: true,
   },
   {
-    beatId: "alliance-briefing",
-    title: "联盟定调",
+    beatId: "alliance-doubt",
+    title: "联盟未稳，先做判断",
     backgroundTag: "command-tent",
     minLines: 2,
     maxLines: 3,
     allowNarration: true,
   },
   {
-    beatId: "timing-pressure",
-    title: "时机压力",
+    beatId: "joint-decision",
+    title: "孙刘合作与决断压力",
+    backgroundTag: "command-tent",
+    minLines: 2,
+    maxLines: 3,
+    allowNarration: true,
+  },
+  {
+    beatId: "fire-plan-shaping",
+    title: "火攻方案逐渐成形",
     backgroundTag: "strategy-table",
     minLines: 2,
     maxLines: 3,
     allowNarration: true,
   },
   {
-    beatId: "huang-gai-commitment",
-    title: "黄盖请命",
+    beatId: "huang-gai-preparation",
+    title: "黄盖苦肉与执行准备",
     backgroundTag: "departure-dock",
     minLines: 2,
     maxLines: 3,
     allowNarration: true,
   },
   {
-    beatId: "launch",
-    title: "临发一刻",
-    backgroundTag: "departure-dock",
-    minLines: 1,
-    maxLines: 2,
+    beatId: "wind-and-timing",
+    title: "时机、风向与真正悬念",
+    backgroundTag: "strategy-table",
+    minLines: 2,
+    maxLines: 3,
     allowNarration: true,
   },
   {
-    beatId: "aftermath",
-    title: "火后收束",
+    beatId: "fire-attack-launch",
+    title: "火攻发动",
+    backgroundTag: "battle-firelight",
+    minLines: 2,
+    maxLines: 3,
+    allowNarration: true,
+  },
+  {
+    beatId: "battle-turning",
+    title: "水陆战局逆转",
+    backgroundTag: "battle-firelight",
+    minLines: 2,
+    maxLines: 3,
+    allowNarration: true,
+  },
+  {
+    beatId: "aftermath-review",
+    title: "战后收束与回看",
     backgroundTag: "embers-aftermath",
-    minLines: 1,
-    maxLines: 2,
+    minLines: 2,
+    maxLines: 3,
     allowNarration: true,
   },
 ];
@@ -225,94 +268,149 @@ const redCliffsViewpointProfiles: Record<
     displayName: "诸葛亮",
     title: "联盟谋臣视角",
     narrationRule:
-      "旁白只能写诸葛亮第一视角的观察、判断和对联盟节奏的把握，不写旁观者总结。",
+      "旁白只能写诸葛亮第一视角的观察、判断和对联盟节奏的把握，不写旁观者总结，不写神机妙算式炫技口吻。",
     userGoal:
-      "突出诸葛亮如何在联盟关系、时机判断和整体布局之间稳住局面。",
+      "把诸葛亮写成一个始终在看大势、看联盟、看节奏的人，让他既在场，又总比别人先半步看见局势会往哪里压过去。",
+    voiceNotes: [
+      "更关注联盟关系能否稳住",
+      "更关注风向、时机、节奏和全局变化",
+      "说话克制、清楚，不夸张，不卖弄",
+    ],
     beatGoals: {
-      "river-watch": "先写出诸葛亮在江面夜色中的判断感，重点是风向未定时的压迫感。",
-      "alliance-briefing": "让诸葛亮和周瑜围绕联盟节奏与判断方式展开克制对话。",
-      "timing-pressure": "把诸葛亮最看重的时机与默契讲清楚，不要写成炫技式奇谋。",
-      "huang-gai-commitment":
-        "让诸葛亮从旁判断黄盖请命的风险和必要性，保持冷静而清楚的视角差异。",
-      launch: "写出诸葛亮在真正动手前如何把所有判断重新压成一个答案。",
-      aftermath: "收束时强调诸葛亮对这场胜负真正转折点的理解，而不是简单庆功。",
+      "cao-army-pressure":
+        "先写曹军南下后的压迫感，诸葛亮要先从江面、船势和敌军自信里判断这场仗真正难在哪里。",
+      "alliance-doubt":
+        "把联盟未稳时的试探写出来，重点是诸葛亮如何观察东吴一侧的态度，而不是急着表现自己。",
+      "joint-decision":
+        "让诸葛亮感到孙刘合作正在成形，但真正的压力在于每一步都必须被彼此相信。",
+      "fire-plan-shaping":
+        "把火攻从一个点子写成逐渐成形的办法，突出诸葛亮对整体节奏和时机链条的判断。",
+      "huang-gai-preparation":
+        "让诸葛亮看见黄盖把最险的一步接过去，重点是他如何判断这一步对全局既危险又必要。",
+      "wind-and-timing":
+        "强化诸葛亮对风向、默契和临门一脚的判断感，让悬念来自时机能不能真的落到同一刻。",
+      "fire-attack-launch":
+        "写火攻发动时诸葛亮的冷静与压住呼吸的感觉，不要写成热血喊话。",
+      "battle-turning":
+        "让诸葛亮看到战局逆转时，注意力仍然放在局面变化和后续收口，而不是只看眼前火势。",
+      "aftermath-review":
+        "收束时要像回看一整段历史推进，强调真正决定赤壁的不是某一把火，而是之前每一步怎么被压成同一个结局。",
     },
     fallbackBeats: [
       {
-        beatId: "river-watch",
+        beatId: "cao-army-pressure",
         lines: [
           {
             speaker: "",
-            text: "江面一时还很安静，可真正让人无法松气的，不是今夜会不会开战，而是所有判断能不能在同一刻落稳。",
+            text: "曹军南下的消息沿江一路压过来时，最令人不安的还不是敌军有多少船，而是这一场仗会不会逼得所有人都来不及把心思放到同一个地方。",
           },
           {
             speaker: "",
-            text: "我看着水面与船影，只觉得这一仗最难的地方从来不在火起之后，而在火起之前谁先把节奏算准。",
+            text: "我站在江边看着夜色和水势，只觉得真正的难处，从来不在火起之后，而在火起之前有没有人先把局势看透。",
           },
         ],
       },
       {
-        beatId: "alliance-briefing",
+        beatId: "alliance-doubt",
+        lines: [
+          {
+            speaker: "鲁肃",
+            text: "眼下最怕的不是不能联手，而是谁都知道该联，却谁都不肯先把心思交出来。",
+          },
+          {
+            speaker: "",
+            text: "我听着这句话，心里更清楚，赤壁的第一道关口根本不在江面，而在盟友彼此之间那层还没彻底落定的疑心。",
+          },
+        ],
+      },
+      {
+        beatId: "joint-decision",
         lines: [
           {
             speaker: "周瑜",
-            text: "曹军越觉得自己稳，我们越不能急。真正要抓的，是他最松却还没觉出危险已近的那一刻。",
+            text: "若要打，就不能只凭一时血气。联军一旦出手，每一步都得像本来就该这样落下来。",
           },
           {
             speaker: "诸葛亮",
-            text: "只要联盟里每一步都能按时落下，这场火就不是侥幸，而是顺势推成的结果。",
+            text: "真正要稳的不是一句主张，而是让彼此都明白，这场合作必须在最紧的时候也不散。",
           },
         ],
       },
       {
-        beatId: "timing-pressure",
+        beatId: "fire-plan-shaping",
         lines: [
           {
             speaker: "",
-            text: "我知道眼下最怕的不是没有计策，而是有人早一步，有人慢一步，最后把原本能成的局自己拉散。",
+            text: "火攻最初还只是桌上一种可能，可当船阵、风向和敌军的松懈被一层层连起来，它就慢慢不再像险招，而更像唯一能把局势翻转过来的路。",
           },
           {
             speaker: "诸葛亮",
-            text: "风向只是一个信号，真正要对齐的，是军心、信任和出手的顺序。",
+            text: "计策从来不是一句话就能成，真正能成的是让每一环都在对的时候碰上下一环。",
           },
         ],
       },
       {
-        beatId: "huang-gai-commitment",
+        beatId: "huang-gai-preparation",
         lines: [
           {
             speaker: "黄盖",
-            text: "若没人把这一步做得像真的，曹军就不会真把门打开。到最后，总得有人先压上去。",
+            text: "若这一步总要有人去做，那就让我去。只要我把险象做真，对面就会替我们把门打开。",
           },
           {
             speaker: "",
-            text: "我看着他把最危险的话说得平稳，心里更清楚，真正的火攻从来不只是点火，而是谁肯先把自己放进局里。",
+            text: "我看着他把最危险的话说得平稳，心里反而更紧，因为我知道从这一刻起，纸上的谋划已经开始往真人身上落。",
           },
         ],
       },
       {
-        beatId: "launch",
+        beatId: "wind-and-timing",
         lines: [
           {
             speaker: "",
-            text: "江风终于转了。我没有再多说，只把先前所有分散的判断重新压成一个答案：现在，必须动。",
-          },
-          {
-            speaker: "周瑜",
-            text: "到这里，犹豫反而最伤局。既然都已落位，就让这一步直直压过去。",
-          },
-        ],
-      },
-      {
-        beatId: "aftermath",
-        lines: [
-          {
-            speaker: "",
-            text: "火光照亮江面时，我反而更清楚地看见，赤壁真正的胜负，其实早在火起之前就已经慢慢定下来了。",
+            text: "越临近动手，越能感觉到真正的悬念不在敢不敢烧，而在风向、军心与船势能不能在同一刻替我们说话。",
           },
           {
             speaker: "诸葛亮",
-            text: "真正难的从来不是点燃那一刻，而是让所有人都在那一刻之前相信，值得一起押上去。",
+            text: "只要有人早一步，或有人慢一步，这一场本能成的局，就会先在自己人手里散掉。",
+          },
+        ],
+      },
+      {
+        beatId: "fire-attack-launch",
+        lines: [
+          {
+            speaker: "",
+            text: "江风转过来的那一瞬，我反而安静下来。之前所有分散的判断都在这一刻被压成同一个答案：现在，终于能动。",
+          },
+          {
+            speaker: "周瑜",
+            text: "到这里，犹豫才最伤局。既然各处都已落位，就让这一把火顺着势头直压过去。",
+          },
+        ],
+      },
+      {
+        beatId: "battle-turning",
+        lines: [
+          {
+            speaker: "",
+            text: "火势一起，江面上原本还稳着的形势忽然像被撕开。船阵乱了，人的心也开始跟着乱，战局终于不再朝曹军那一边站着。",
+          },
+          {
+            speaker: "曹操",
+            text: "一夜之间，原本可控的水军竟先在自己脚下失了形，这比火本身更叫人心惊。",
+          },
+        ],
+      },
+      {
+        beatId: "aftermath-review",
+        lines: [
+          {
+            speaker: "",
+            text: "等火光从眼前退下去，我反而更清楚地看见，赤壁最惊险的部分并不是燃烧的那一刻，而是之前每一步都不能松手的那段时间。",
+          },
+          {
+            speaker: "诸葛亮",
+            text: "真正决定胜负的，从来不是最后那一下看得见的响动，而是所有人愿不愿在它来之前，把判断一起压到同一个方向上。",
           },
         ],
       },
@@ -323,94 +421,149 @@ const redCliffsViewpointProfiles: Record<
     displayName: "周瑜",
     title: "联军主帅视角",
     narrationRule:
-      "旁白只能写周瑜第一视角对军心、联盟和战场节奏的判断，不写旁观式解说。",
+      "旁白只能写周瑜第一视角对军心、联盟、执行与成败压力的判断，不写旁观式解说，不写夸张英雄口吻。",
     userGoal:
-      "突出周瑜作为主导者，如何把联盟、军心和战术都压到同一节拍上。",
+      "把周瑜写成真正扛着整场胜负的人，让他每一段都更接近主导者、统帅和拍板者的压力感。",
+    voiceNotes: [
+      "更关注局面控制和成败责任",
+      "更在意命令是否成立、军心是否跟上",
+      "说话应带主导感，但仍然克制",
+    ],
     beatGoals: {
-      "river-watch": "先写周瑜如何观察夜色、风向与全军气息，突出主导者对节奏的敏感。",
-      "alliance-briefing": "让周瑜主导定调，诸葛亮回应，体现统帅与谋臣的差异。",
-      "timing-pressure": "把周瑜最在意的军心、执行与时机压力讲清楚。",
-      "huang-gai-commitment":
-        "让周瑜从主帅角度衡量黄盖请命的风险与必要性，体现他必须拍板的压力。",
-      launch: "写周瑜在真正下令前的最后收束感，不要写成泛泛而谈。",
-      aftermath: "收束时强调周瑜看到的不是火势本身，而是联军终于被他压到同一拍上。",
+      "cao-army-pressure":
+        "先写周瑜如何看待曹军南下带来的压迫，不只看敌情，更要写他对己方军心和节奏的敏感。",
+      "alliance-doubt":
+        "让周瑜面对联盟未稳时的试探，突出他明知要合作，却不能先丢掉主导权的压力。",
+      "joint-decision":
+        "把周瑜拍板的压力写清楚，让合作不是空口同盟，而是一步步真的要由他负责落下去。",
+      "fire-plan-shaping":
+        "让周瑜看到火攻方案逐步成形时，更关注的是它能不能真正执行，而不是它听起来多漂亮。",
+      "huang-gai-preparation":
+        "写周瑜如何衡量黄盖以身入局这一步，重点是统帅必须承担让别人去赴险的压力。",
+      "wind-and-timing":
+        "强化周瑜对时机、军令和全军同步的焦虑，他不是在等一个传说中的天时，而是在等能下令的一刻。",
+      "fire-attack-launch":
+        "火攻发动时，周瑜要像一个终于把全局压到同一拍上的统帅，不要写成简单喝令。",
+      "battle-turning":
+        "战局逆转时，重点是周瑜如何继续盯住局面，不让刚到手的优势重新散掉。",
+      "aftermath-review":
+        "收束时让周瑜回看自己承担的整场压力，强调胜负不只是火成不成，而是联盟、军令和人心有没有先被压稳。",
     },
     fallbackBeats: [
       {
-        beatId: "river-watch",
+        beatId: "cao-army-pressure",
         lines: [
           {
             speaker: "",
-            text: "夜色压在江面上，四下都很安静。我最在意的不是眼前有多少船，而是整支联军能不能在同一刻听懂我的命令。",
+            text: "曹军南下的消息像潮水一样压过来时，我最怕的不是敌军兵多，而是己方有人还把这场仗当成迟早要打的一战，没有意识到它已经逼到了眼前。",
           },
           {
             speaker: "",
-            text: "这一仗真要打成，靠的不会是哪一句豪言，而是所有该落下去的环节都得在同一拍上落稳。",
+            text: "身为主将，最先压到肩上的从来不是刀兵，而是所有人都等着看我会不会先乱了节奏。",
           },
         ],
       },
       {
-        beatId: "alliance-briefing",
+        beatId: "alliance-doubt",
+        lines: [
+          {
+            speaker: "鲁肃",
+            text: "要联刘抗曹，眼下最难的是彼此都明白道理，却都不愿先把底牌亮得太彻底。",
+          },
+          {
+            speaker: "",
+            text: "我知道这话没错。要合作，但也不能让东吴的主导权在第一步就松掉，这才是眼下真正难拿捏的地方。",
+          },
+        ],
+      },
+      {
+        beatId: "joint-decision",
         lines: [
           {
             speaker: "周瑜",
-            text: "曹军自恃兵多，心就会先松。只要我们把节奏握住，他们以为稳的地方，反而最容易先裂开。",
+            text: "若要联手，就得把每一步都算到能落地为止。合作不是口头一句应承，而是之后所有命令都要真有人去接。",
           },
           {
             speaker: "诸葛亮",
-            text: "主将若能把全局压稳，后面的每一步就不再是冒进，而是顺势推进。",
+            text: "只要有人肯把局面先压稳，后面的判断就不再只是冒险，而会慢慢变成顺势。",
           },
         ],
       },
       {
-        beatId: "timing-pressure",
+        beatId: "fire-plan-shaping",
         lines: [
           {
             speaker: "",
-            text: "我最怕的不是敌军太强，而是自己人有人快一步、有人慢一步，最后让一场本可成的布局被节奏拖散。",
+            text: "火攻不是谁灵光一闪的巧计。要让它成，就得让战船、江风、敌军的松懈和我军的配合，一层一层都落到实处。",
           },
           {
             speaker: "周瑜",
-            text: "风向要等，军心也要等。不到所有人都能同时动的那一刻，这一把火就不能先点。",
+            text: "我宁愿把这局想慢一点，也不肯让一个听起来聪明、却走不完的法子把全军带进水里。",
           },
         ],
       },
       {
-        beatId: "huang-gai-commitment",
+        beatId: "huang-gai-preparation",
         lines: [
           {
             speaker: "黄盖",
-            text: "若这一步总要有人去做，那就让我去。只要我演得足够真，曹军就会把破口自己打开。",
+            text: "若这一步非得有人先走出去，那就让我去。只要对面真信了，后面的火才有地方落。",
           },
           {
-            speaker: "周瑜",
-            text: "一旦走出去，就没有回头的余地。我要的不只是你敢去，而是你能把这一险步稳稳做成。",
+            speaker: "",
+            text: "我听着他请命，心里明白这不是一句慷慨之言，而是我要亲手点头、让别人拿命去补上的一环。",
           },
         ],
       },
       {
-        beatId: "launch",
+        beatId: "wind-and-timing",
         lines: [
           {
             speaker: "",
-            text: "等了整夜的风终于转过来。我知道自己不能再多犹豫半分，此时若不把全军一口气压出去，前面的判断都会白费。",
+            text: "越临近动手，我越清楚这场仗最不能出错的不是胆气，而是节拍。风向若错，军心若散，连最好的谋划也只会烂在半路。",
           },
           {
             speaker: "周瑜",
-            text: "既然时机到了，就让这一步落到底。真正的统帅，不该在最后一刻自己先松手。",
+            text: "不到所有人都能跟上同一条命令的那一刻，我宁可继续压着，也不会让这一步仓促落下去。",
           },
         ],
       },
       {
-        beatId: "aftermath",
+        beatId: "fire-attack-launch",
         lines: [
           {
             speaker: "",
-            text: "火势照亮江面时，我反而更清楚，这一战真正决定胜负的，不是火本身，而是我能不能先把联军压成一个整体。",
+            text: "风终于顺了，我反倒比先前更平静。等了这么久，真正需要的不是激烈，而是把这一声令下得没有丝毫迟疑。",
           },
           {
             speaker: "周瑜",
-            text: "若每个人都还在各打各的算盘，再好的计策也只会散在风里。今晚最难的，是先把人心拧到一起。",
+            text: "各船齐动，别给曹军留半口喘息的工夫。今天这把火，不是为了虚张声势，是为了把战局一次压过去。",
+          },
+        ],
+      },
+      {
+        beatId: "battle-turning",
+        lines: [
+          {
+            speaker: "",
+            text: "火势铺开之后，江面很快就不再是先前那个局面。敌军的船阵乱了，原本压在我方头上的那股气，也终于被硬生生掀了过去。",
+          },
+          {
+            speaker: "周瑜",
+            text: "别只顾着看火，乘势追上去。真正的胜势，是在对面先乱的时候，把我们自己的人继续压稳。",
+          },
+        ],
+      },
+      {
+        beatId: "aftermath-review",
+        lines: [
+          {
+            speaker: "",
+            text: "等火势渐远，我心里反而更清楚，这一战真正压人的地方，不是最后燃起来时有多壮观，而是之前每一步都不能松手的那口气。",
+          },
+          {
+            speaker: "周瑜",
+            text: "若没有先把联盟、军令和人心拧在一处，哪怕真的等到了东风，这把火也未必烧得成今天这个局面。",
           },
         ],
       },
@@ -421,94 +574,149 @@ const redCliffsViewpointProfiles: Record<
     displayName: "黄盖",
     title: "火攻执行者视角",
     narrationRule:
-      "旁白只能写黄盖第一视角的感受、判断和执行压力，不写外部总结。",
+      "旁白只能写黄盖第一视角的风险感、执行压力和临阵判断，不写外部总结，不写慷慨陈词式悲壮腔。",
     userGoal:
-      "突出黄盖如何把最危险的一步当成必须完成的任务，重点写执行者视角的心理压力。",
+      "把黄盖写成真正要把最危险一步走出去的人，让他的故事重点落在执行风险、身体承受和撑到最后一刻的压力上。",
+    voiceNotes: [
+      "更关注自己是否会先露出破绽",
+      "更关注行动能否真的走到最后一步",
+      "语气要硬，但不是喊口号",
+    ],
     beatGoals: {
-      "river-watch": "先写黄盖如何感受夜色、风势与行动前的压抑，突出执行者对风险的直觉。",
-      "alliance-briefing": "让黄盖身在局中听见主将与谋臣定调，感到这份安排最终会落到自己身上。",
-      "timing-pressure": "把黄盖对时机和破绽的警惕写清楚，强调一步失手会让整场火攻崩掉。",
-      "huang-gai-commitment":
-        "让黄盖真正接下这一步，展现他如何把赴险说得平稳而坚定。",
-      launch: "写黄盖在临行前把自己压住的那一刻，不要写成抒情散文。",
-      aftermath: "收束时强调黄盖回看这场火攻时，对执行与承担的理解。",
+      "cao-army-pressure":
+        "先写黄盖对曹军南下和大战将近的直觉压力，他看到的不是抽象大势，而是越来越近的危险任务。",
+      "alliance-doubt":
+        "让黄盖在旁听联盟定调时，感到这场合作最后会怎么落到执行层面，重点是他开始意识到自己可能要被推到最前面。",
+      "joint-decision":
+        "写黄盖看着上层做判断时，对自己将来要承担哪一步产生越来越具体的预感。",
+      "fire-plan-shaping":
+        "让黄盖理解火攻方案不是纸面奇谋，而是一件一旦轮到执行就不能出一点差错的事。",
+      "huang-gai-preparation":
+        "这是黄盖的关键 beat，要真正写出他接下这一步，并把赴险说得稳，而不是只做工具人说明。",
+      "wind-and-timing":
+        "强化黄盖对细节、时机和破绽的紧绷感，悬念来自他知不知道自己只要错半步就会先死在局里。",
+      "fire-attack-launch":
+        "写黄盖真正把自己送进火攻链条时的压抑和决绝，不要写成空泛壮烈。",
+      "battle-turning":
+        "战局逆转时，黄盖首先感到的不是宏大战报，而是那一步真的没有白走，自己撑过去了。",
+      "aftermath-review":
+        "收束时让黄盖回看这场火攻，强调真正危险的不是计划听起来有多险，而是人能不能把它一步不差地做完。",
     },
     fallbackBeats: [
       {
-        beatId: "river-watch",
+        beatId: "cao-army-pressure",
         lines: [
           {
             speaker: "",
-            text: "江面很静，可我心里一点也松不下来。真正让我警惕的，不是曹军会不会察觉，而是自己有没有把每一个细节都撑到最后。",
+            text: "曹军还没压到眼前时，江上的风就已经让人不安。对我来说，这场仗最先逼过来的不是战报，而是那种迟早会轮到自己去做最险一环的直觉。",
           },
           {
             speaker: "",
-            text: "这类局最怕的从来不是没人敢谋，而是轮到执行时，先有人在最后一刻露了怯。",
+            text: "越是大战将起，越不能拿胆气骗自己。真正会要命的，从来不是嘴上敢不敢，而是临到身上时能不能一寸不差地撑住。",
           },
         ],
       },
       {
-        beatId: "alliance-briefing",
+        beatId: "alliance-doubt",
+        lines: [
+          {
+            speaker: "鲁肃",
+            text: "孙刘若不能先稳住彼此，后面就算真有办法，也只会卡在半路上。",
+          },
+          {
+            speaker: "",
+            text: "我站在一旁听着这些话，心里却越来越明白，等上面把合作定下来，最危险的那一步多半还是要有人亲自扛出去。",
+          },
+        ],
+      },
+      {
+        beatId: "joint-decision",
         lines: [
           {
             speaker: "周瑜",
-            text: "联盟和战术我来压，真正要命的一环，是谁能把最险的一步做得像真的。",
+            text: "这场仗不是只靠一条计策撑起来的，真正难的是让每个环节都有人敢接，也有人能接住。",
           },
           {
             speaker: "",
-            text: "我站在帐中听着这些话，心里明白，这一仗最后总会有人把自己先放上桌面，而那个人多半就是我。",
+            text: "我听着主将拍板，忽然更清楚自己在这局里的位置。上面每定下一步，离我要走出去的时候就更近一点。",
           },
         ],
       },
       {
-        beatId: "timing-pressure",
+        beatId: "fire-plan-shaping",
         lines: [
           {
             speaker: "",
-            text: "对我来说，时机不是一句话，而是每一个动作都不能多也不能少。只要露出一点不对，曹军就不会真信。",
+            text: "火攻在旁人嘴里像是一招妙计，可落到我心里，它先是一长串不能出错的细节：船要怎么靠，话要怎么说，脸上不能露出哪一寸不稳。",
           },
           {
             speaker: "黄盖",
-            text: "既然要骗过对面，就得先骗过所有盯着我的人。越到这时候，越不能让人看出我心里有半分迟疑。",
+            text: "若只是会说这法子能成，那还不算本事。真本事是在轮到自己上船时，还能把该做的都做得像早想明白了一样。",
           },
         ],
       },
       {
-        beatId: "huang-gai-commitment",
+        beatId: "huang-gai-preparation",
         lines: [
           {
             speaker: "黄盖",
-            text: "若这一步必须有人去走，那就让我去。火攻要成，先得让别人真以为我已经被逼到绝路。",
+            text: "既然这一步非得有人真去送上门，我就去。不是我看轻生死，是这局走到这里，总得有人先拿自己的身子去把门撞开。",
           },
           {
             speaker: "周瑜",
-            text: "这一步一旦压上去，就只能往前。你若肯担，我就把后面的局都替你接稳。",
+            text: "你若去了，就不是做做样子。要骗过曹军，就得先把自己压到连我们的人都挑不出破绽。",
           },
         ],
       },
       {
-        beatId: "launch",
+        beatId: "wind-and-timing",
         lines: [
           {
             speaker: "",
-            text: "真正上船前，我反而冷静下来了。前面的筹谋再多，到最后都只剩一件事：我得把这一险步替所有人走到底。",
+            text: "越到临行前，心反而越不能乱。风向、船距、对面的戒心，任何一样没踩准，我就会先死在还没起火的时候。",
           },
           {
             speaker: "黄盖",
-            text: "若我在这时候先乱了，那整场火攻就只是纸上的好看话。既然已经入局，就不能给自己留退路。",
+            text: "这时候最怕的不是风不来，而是自己先在脸上露了怯。只要被对面多看出半分，这局就会先从我这里断掉。",
           },
         ],
       },
       {
-        beatId: "aftermath",
+        beatId: "fire-attack-launch",
         lines: [
           {
             speaker: "",
-            text: "火光起时，我没有先想到胜负，只想到那一步终于撑过去了。原来所谓大局，很多时候也只是有人肯先把命押上去。",
+            text: "真到了登船那一刻，我反而不再去想之后能不能活着回来。人一旦把自己放进这局里，先顾着想退路，脚底就会先软。",
           },
           {
             speaker: "黄盖",
-            text: "计策再好，也总得有人真的去做。若没人肯把最险的一步走完，再周全的布局也只是摆在案上的话。",
+            text: "把船推过去。只要还能往前再撑半刻，这把火就有机会替我们把后面的路全烧开。",
+          },
+        ],
+      },
+      {
+        beatId: "battle-turning",
+        lines: [
+          {
+            speaker: "",
+            text: "火势一起，最先撞上心口的不是痛快，而是一口终于松下来又不敢真松的气。那一步总算没有白走，江上的局也真的开始倒过去了。",
+          },
+          {
+            speaker: "曹操",
+            text: "原以为只是几只来降的船，没想到真正扑过来的，是整片来不及回身的火。",
+          },
+        ],
+      },
+      {
+        beatId: "aftermath-review",
+        lines: [
+          {
+            speaker: "",
+            text: "等到战后再回看，我才更明白，赤壁最险的不是火起那刻有多烈，而是人在火起之前，能不能把每一步都忍着、熬着、做到底。",
+          },
+          {
+            speaker: "黄盖",
+            text: "纸上的谋划再好，也得有人把它一步一步走成真的。若临到最后先缩了手，再大的局也只会剩下一张空图。",
           },
         ],
       },
@@ -516,7 +724,7 @@ const redCliffsViewpointProfiles: Record<
   },
 };
 
-const allowedSpeakerNames = Object.values(redCliffsSpeakerNameMap);
+const allowedSpeakerNameSet = new Set<string>(allowedSpeakerNames);
 
 function isRedCliffsAiSupportedViewpoint(
   viewpointId?: string,
@@ -595,14 +803,12 @@ function getOpenAiConfig() {
   };
 }
 
-function createRedCliffsAiDebugInfo(
-  config: ReturnType<typeof getOpenAiConfig>,
-): RedCliffsAiDebugInfo {
+function createRedCliffsAiDebugInfo(config = getOpenAiConfig()): RedCliffsAiDebugInfo {
   return {
     requestId: "",
     upstreamUrl: config.upstreamUrl,
     model: config.model,
-    hasApiKey: Boolean(config.apiKey),
+    hasApiKey: !!config.apiKey,
     apiKeySource: config.apiKeySource,
     refererHeader: config.refererHeader,
     titleHeader: config.titleHeader,
@@ -631,61 +837,45 @@ async function readResponseBody(response: Response) {
   }
 }
 
-function extractResponseText(payload: unknown) {
-  if (
-    payload &&
-    typeof payload === "object" &&
-    "output_text" in payload &&
-    typeof payload.output_text === "string"
-  ) {
-    return payload.output_text;
+function extractResponseText(payload: unknown): string {
+  if (!payload || typeof payload !== "object") {
+    return "";
   }
 
-  if (
-    payload &&
-    typeof payload === "object" &&
-    "output" in payload &&
-    Array.isArray(payload.output)
-  ) {
-    const textParts: string[] = [];
+  const response = payload as {
+    output_text?: string;
+    output?: Array<{
+      type?: string;
+      content?: Array<{
+        type?: string;
+        text?: string;
+      }>;
+    }>;
+  };
 
-    for (const item of payload.output) {
-      if (
-        item &&
-        typeof item === "object" &&
-        "content" in item &&
-        Array.isArray(item.content)
-      ) {
-        for (const content of item.content) {
-          if (
-            content &&
-            typeof content === "object" &&
-            "text" in content &&
-            typeof content.text === "string"
-          ) {
-            textParts.push(content.text);
-          }
-        }
-      }
-    }
-
-    if (textParts.length > 0) {
-      return textParts.join("\n");
-    }
+  if (typeof response.output_text === "string" && response.output_text.trim()) {
+    return response.output_text.trim();
   }
 
-  return "";
+  const textFragments =
+    response.output
+      ?.flatMap((item) =>
+        item.content
+          ?.filter((content) => content.type === "output_text")
+          .map((content) => content.text ?? "") ?? [],
+      )
+      .join("") ?? "";
+
+  return textFragments.trim();
 }
 
-function serializeBeatBlueprints(
-  viewpointId: SupportedRedCliffsViewpointId,
-) {
+function serializeBeatBlueprints(viewpointId: SupportedRedCliffsViewpointId) {
   const profile = getRedCliffsViewpointProfile(viewpointId);
 
   return redCliffsBeatBlueprints
-    .map((beat) =>
+    .map((beat, index) =>
       [
-        `- beatId=${beat.beatId}`,
+        `${index + 1}. beatId=${beat.beatId}`,
         `title=${beat.title}`,
         `goal=${profile.beatGoals[beat.beatId]}`,
         `lineRange=${beat.minLines}-${beat.maxLines}`,
@@ -717,21 +907,30 @@ function buildRedCliffsStoryPackagePrompt(
     "Do not output layout, UI, CSS, camera language, file paths, asset filenames, choices, nextSceneId, backgroundTag, standeeKey, or state updates.",
     `The event is ${eventItem.title} and the fixed first-person viewpoint is ${profile.displayName}.`,
     "This is a single linear route with no player branching.",
+    "The final result must read like a complete historical story with clear progression, not like a summary, outline, or recap.",
+    "Each beat should feel like the next layer of the same event pressing forward.",
     "Keep the tone tense, restrained, natural, and readable for general users.",
+    "You may let supporting historical figures appear briefly in dialogue if needed, but only from the allowed speaker list.",
     "Narration rules:",
     "- narration uses empty speaker.",
     `- ${profile.narrationRule}`,
+    "- narration should feel like first-person observation, pressure, and judgment from this viewpoint.",
     "- no quoted dialogue in narration.",
-    "- each narration line should be short but complete, not a fragment.",
-    "- a natural target is around 35 to 80 Chinese characters.",
+    "- each narration line should be short but complete, with atmosphere and information, not a fragment.",
+    "- a natural target is around 35 to 90 Chinese characters.",
     "Dialogue rules:",
     "- each line contains only one speaker talking.",
-    "- no narration, no action description, no crowd reaction, no third-person summary.",
-    "- dialogue should sound like one complete spoken sentence or two short linked sentences.",
-    "- a natural target is around 18 to 45 Chinese characters.",
+    "- dialogue should sound like a full spoken sentence or two linked short spoken sentences.",
+    "- no action description, no crowd summary, no narrator explanation mixed into dialogue.",
+    "- a natural target is around 18 to 48 Chinese characters.",
     "- if a speaker needs more words, split into multiple short lines.",
     `Characters allowed to speak are only ${allowedSpeakerNames.join("、")}。`,
-    "Return all beats in the fixed order exactly once.",
+    "Story rhythm rules:",
+    "- return all beats in the fixed order exactly once.",
+    "- let the story unfold gradually beat by beat.",
+    "- avoid repeating the same sentence pattern in every beat.",
+    "- avoid abstract slogans and empty summarizing lines.",
+    `The viewpoint should keep these traits: ${profile.voiceNotes.join("；")}。`,
   ].join("\n");
 
   const userPrompt = [
@@ -747,6 +946,7 @@ function buildRedCliffsStoryPackagePrompt(
     `Client trigger source: ${params.triggerSource ?? "initial"}`,
     "The program controls background switches, standee choice, scene progression, and ending locally.",
     "Do not omit any beat.",
+    "This route should feel like reading a compact historical novella scene-by-scene, not like reading a product summary.",
   ].join("\n\n");
 
   return {
@@ -945,7 +1145,7 @@ function validateRedCliffsScriptPackage(
   const warnings: string[] = [];
   const quotePattern = /["“”‘’「」『』]/;
   const dialogueNarrationPattern =
-    /(你看见|你听见|你察觉|众人|周围|四下|江面|军帐里|有人|身后|此刻|这一瞬)/;
+    /(你看见|你听见|你察觉|众人|周围|四下|江面|军帐里|身后|此刻|这一瞬|火光照亮|战局正在)/;
 
   if (!scriptPackage.packageId) {
     errors.push("packageId 不能为空。");
@@ -976,9 +1176,14 @@ function validateRedCliffsScriptPackage(
       errors.push(`第 ${index + 1} 个 beat 必须是 ${blueprint.beatId}。`);
     }
 
-    if (beat.lines.length < blueprint.minLines || beat.lines.length > blueprint.maxLines) {
-      errors.push(
-        `${blueprint.beatId} 的 line 数量必须在 ${blueprint.minLines}-${blueprint.maxLines} 之间。`,
+    if (beat.lines.length === 0) {
+      errors.push(`${blueprint.beatId} 不能为空。`);
+    } else if (
+      beat.lines.length < blueprint.minLines ||
+      beat.lines.length > blueprint.maxLines
+    ) {
+      warnings.push(
+        `${blueprint.beatId} 的 line 数量偏离推荐范围 ${blueprint.minLines}-${blueprint.maxLines}。`,
       );
     }
 
@@ -987,6 +1192,7 @@ function validateRedCliffsScriptPackage(
         errors.push(
           `${blueprint.beatId} 第 ${lineIndex + 1} 条 line 的 text 不能为空。`,
         );
+        return;
       }
 
       if (!line.speaker) {
@@ -994,47 +1200,56 @@ function validateRedCliffsScriptPackage(
           errors.push(`${blueprint.beatId} 不允许使用空 speaker 旁白。`);
         }
         if (quotePattern.test(line.text)) {
-          errors.push(
-            `${blueprint.beatId} 第 ${lineIndex + 1} 条旁白不能出现引号对白。`,
+          warnings.push(
+            `${blueprint.beatId} 第 ${lineIndex + 1} 条旁白里出现了引号对白，建议改成纯第一视角叙述。`,
           );
         }
-        if (line.text.length > 90 || line.text.split("\n").length > 3) {
-          errors.push(`${blueprint.beatId} 第 ${lineIndex + 1} 条旁白需要更短。`);
-        }
-        if (line.text.length < 24) {
+        if (line.text.length < 28) {
           warnings.push(
-            `${blueprint.beatId} 第 ${lineIndex + 1} 条旁白偏短，建议补足一点局势感或心理感。`,
+            `${blueprint.beatId} 第 ${lineIndex + 1} 条旁白偏短，建议补足一点局势感、环境感或心理感。`,
+          );
+        }
+        if (line.text.length > 110) {
+          warnings.push(
+            `${blueprint.beatId} 第 ${lineIndex + 1} 条旁白偏长，建议拆成更像 AVG 的两条短幕。`,
+          );
+        }
+        if (line.text.split("\n").length > 3) {
+          warnings.push(
+            `${blueprint.beatId} 第 ${lineIndex + 1} 条旁白换行较多，建议收得更紧一些。`,
           );
         }
         return;
       }
 
-      if (!allowedSpeakerNames.includes(line.speaker)) {
+      if (!allowedSpeakerNameSet.has(line.speaker)) {
         errors.push(
           `${blueprint.beatId} 第 ${lineIndex + 1} 条 line 的 speaker 只能是 ${allowedSpeakerNames.join(" / ")}。`,
         );
-      }
-      if (line.text.includes("\n")) {
-        errors.push(
-          `${blueprint.beatId} 第 ${lineIndex + 1} 条 dialogue 不能换行。`,
-        );
-      }
-      if (line.text.length > 56) {
-        errors.push(`${blueprint.beatId} 第 ${lineIndex + 1} 条 dialogue 太长。`);
       }
       if (line.text.length < 12) {
         warnings.push(
           `${blueprint.beatId} 第 ${lineIndex + 1} 条 dialogue 偏短，建议写成更完整的一句人话。`,
         );
       }
+      if (line.text.length > 60) {
+        warnings.push(
+          `${blueprint.beatId} 第 ${lineIndex + 1} 条 dialogue 偏长，建议拆成两条短 line。`,
+        );
+      }
+      if (line.text.includes("\n")) {
+        warnings.push(
+          `${blueprint.beatId} 第 ${lineIndex + 1} 条 dialogue 出现了换行，建议收成单条对白。`,
+        );
+      }
       if (quotePattern.test(line.text)) {
-        errors.push(
-          `${blueprint.beatId} 第 ${lineIndex + 1} 条 dialogue 不要嵌套引号。`,
+        warnings.push(
+          `${blueprint.beatId} 第 ${lineIndex + 1} 条 dialogue 内又嵌套了引号，建议改得更自然。`,
         );
       }
       if (dialogueNarrationPattern.test(line.text)) {
-        errors.push(
-          `${blueprint.beatId} 第 ${lineIndex + 1} 条 dialogue 混入了旁白或环境叙述。`,
+        warnings.push(
+          `${blueprint.beatId} 第 ${lineIndex + 1} 条 dialogue 带有旁白或环境描述味道，建议收得更像人物说话。`,
         );
       }
     });
@@ -1044,17 +1259,25 @@ function validateRedCliffsScriptPackage(
     (sum, beat) => sum + beat.lines.length,
     0,
   );
-  if (totalLines < 10 || totalLines > 16) {
-    warnings.push("总 line 数量偏离推荐范围 10-16。");
+  if (totalLines < 18 || totalLines > 24) {
+    warnings.push("总 line 数量偏离推荐范围 18-24。");
   }
 
   const selectedSpeakerName = redCliffsSpeakerNameMap[viewpointId];
-  const hasSelectedViewpointDialogue = scriptPackage.beats.some((beat) =>
-    beat.lines.some((line) => line.speaker === selectedSpeakerName),
+  const selectedViewpointDialogueCount = scriptPackage.beats.reduce(
+    (sum, beat) =>
+      sum +
+      beat.lines.filter((line) => line.speaker === selectedSpeakerName).length,
+    0,
   );
-  if (!hasSelectedViewpointDialogue) {
+
+  if (selectedViewpointDialogueCount === 0) {
     warnings.push(
-      `当前脚本里 ${selectedSpeakerName} 还没有明确发言，建议至少保留一到两条体现视角差异的对白。`,
+      `当前脚本里 ${selectedSpeakerName} 还没有明确发言，建议至少保留两条以上体现视角差异的对白。`,
+    );
+  } else if (selectedViewpointDialogueCount < 2) {
+    warnings.push(
+      `${selectedSpeakerName} 的发言仍然偏少，建议再补一两条更能体现其位置和压力的对白。`,
     );
   }
 
@@ -1069,6 +1292,14 @@ function formatRedCliffsScriptValidation(
   result: RedCliffsScriptValidationResult,
 ) {
   return [...result.errors, ...result.warnings].join(" ");
+}
+
+function formatRedCliffsWarningSummary(warnings: string[]) {
+  if (warnings.length === 0) {
+    return undefined;
+  }
+
+  return `调试信息：AI输出存在 ${warnings.length} 条 warning`;
 }
 
 function createSceneStandee(speaker: string): EventSceneStandee {
@@ -1192,22 +1423,22 @@ export async function generateRedCliffsAiStoryPackage(
       ok: false,
       source: "fallback-local",
       playableContent: fallbackPlayableContent,
-      error: "当前只支持赤壁之战的诸葛亮、周瑜、黄盖三条 AI 线性脚本主路径。",
+      error:
+        "当前只支持赤壁之战的诸葛亮、周瑜、黄盖三条 AI 线性脚本主路径。",
     };
   }
 
   try {
     const requestId =
       params.clientRequestId?.trim() || createRedCliffsAiRequestId();
-    const { scriptPackage, debug } = await requestStructuredRedCliffsScriptPackage(
-      {
+    const { scriptPackage, debug } =
+      await requestStructuredRedCliffsScriptPackage({
         request: {
           ...params,
           viewpointId: params.viewpointId,
         },
         requestId,
-      },
-    );
+      });
 
     const normalizedPackage = normalizeRedCliffsScriptPackage(scriptPackage);
     const validationStart = performance.now();
@@ -1251,6 +1482,10 @@ export async function generateRedCliffsAiStoryPackage(
       source: "ai",
       scriptPackage: normalizedPackage,
       playableContent: adaptedPlayableContent,
+      warning:
+        validation.warnings.length > 0
+          ? formatRedCliffsWarningSummary(validation.warnings)
+          : undefined,
       debug,
     };
   } catch (error) {
