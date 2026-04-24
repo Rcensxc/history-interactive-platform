@@ -820,7 +820,7 @@ function formatHongmenWarningSummary(warnings: string[]) {
     return undefined;
   }
 
-  return `AI 剧情已生成，存在 ${warnings.length} 条 warning，已继续使用 AI 输出。`;
+  return `调试信息：AI输出存在 ${warnings.length} 条 warning`;
 }
 
 function createSceneStandee(speaker: string): EventSceneStandee {

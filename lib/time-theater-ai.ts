@@ -219,21 +219,45 @@ function createFallbackScriptPackage(params: {
         speakerId: "",
         text: topic.opening,
       },
-      ...cast.map((figure, index) => ({
-        type: "dialogue" as const,
-        speakerId: figure.id,
-        text:
-          index === 0
-            ? `若把“${topic.title}”摆到我面前，我最先会判断眼前局面究竟先该稳什么，再决定自己要把话说到哪里。`
-            : `若让我接着说，我会从${figure.role}的角度回应这个主题，因为真正难的往往不是表态，而是怎样把判断落到局面里。`,
-      })),
+      ...cast.flatMap((figure, index) => {
+        const nextFigure = cast[(index + 1) % cast.length];
+        return [
+          {
+            type: "dialogue" as const,
+            speakerId: figure.id,
+            text:
+              index === 0
+                ? `若把“${topic.title}”摆到我面前，我不会先急着亮态度，我会先看清局面里最先要稳住的究竟是什么。`
+                : `若轮到我先表态，我会从${figure.role}的角度回答这个题，因为真正难的从来不是说得漂亮，而是判断能不能落下去。`,
+          },
+          {
+            type: "dialogue" as const,
+            speakerId: nextFigure.id,
+            text: `你这话说得稳，可若只停在“先稳住”上，还是太空了。真到局面发紧的时候，谁来担那一步，才是讨论的分水岭。`,
+          },
+        ];
+      }),
       {
         type: "narration",
         speakerId: "",
         text:
           viewpoint
-            ? `${viewpoint.name}重新看向同席的人物，发现这场讨论真正留下来的，不是统一答案，而是不同人物面对同一主题时截然不同的判断方式。`
-            : "这场跨时空讨论并没有得出唯一答案，但不同人物的判断方式，已经把主题的层次慢慢展开了。",
+            ? `${viewpoint.name}听到这里，已经能感觉到席间的气氛和一开始不同了。众人说的还是同一个主题，可真正碰撞的地方，已经慢慢落在“谁来承担”与“先做什么”上。`
+            : "讨论走到这里，气氛已经不再只是轮流发言。众人说的是同一个主题，真正碰撞的却是判断背后的取舍与承担。",
+      },
+      {
+        type: "dialogue",
+        speakerId: viewpoint?.id ?? cast[0]?.id ?? "",
+        text:
+          "听到这里，我更在意的已经不是谁的话更好听，而是谁的判断真能在最难的时候先落到地上。",
+      },
+      {
+        type: "narration",
+        speakerId: "",
+        text:
+          viewpoint
+            ? `${viewpoint.name}重新看向同席的人物，发现这场讨论留下来的并不是整齐答案，而是每个人面对同一主题时，真正看重的先后与分量。`
+            : "这场跨时空讨论并没有得出唯一答案，但不同人物的判断方式，已经把主题的层次慢慢推开了。",
       },
     ],
   };
@@ -243,7 +267,7 @@ function serializeCharacters(characters: HistoricalFigure[]) {
   return characters
     .map(
       (figure) =>
-        `- id=${figure.id} | name=${figure.name} | dynasty=${figure.dynasty} | role=${figure.role} | introduction=${figure.introduction}`,
+        `- id=${figure.id} | name=${figure.name} | dynasty=${figure.dynasty} | role=${figure.role} | keywords=${figure.keywords.join("、")} | signatureEvent=${figure.signatureEvent} | introduction=${figure.introduction}`,
     )
     .join("\n");
 }
@@ -266,23 +290,29 @@ function buildPrompt(params: {
     "The stage, background, progression, and visual rules are all controlled locally by the program.",
     "This is not a branching story. It is one stable, linear mini theater discussion.",
     "Any valid selected characters may appear together, regardless of dynasty. Do not assume a preset recommended combination.",
+    "The result must feel like a small live discussion scene, not a list of viewpoints or a recap article.",
     "Narration rules:",
     "- narration uses type=narration and speakerId is an empty string.",
     "- narration means the chosen first-person viewpoint character observing the stage, feeling the atmosphere, or forming a judgment.",
-    "- narration should stay short but complete, usually around 30 to 70 Chinese characters.",
+    "- narration should stay short but complete, usually around 30 to 80 Chinese characters.",
     "- no quoted dialogue inside narration.",
     "Dialogue rules:",
     "- dialogue uses type=dialogue and exactly one speakerId from the selected characters.",
     "- each dialogue line should sound like one complete spoken sentence or two short linked clauses.",
-    "- dialogue should usually stay around 18 to 45 Chinese characters.",
+    "- dialogue should usually stay around 18 to 55 Chinese characters.",
     "- no narration, no stage directions, no multiple speakers inside one line.",
-    "Rhythm rules:",
-    "- opening: viewpoint observes the cast and atmosphere.",
+    "Discussion rhythm rules:",
+    "- opening: the chosen viewpoint observes the cast and atmosphere.",
     "- first round: each selected character gives an initial stance on the topic.",
-    "- second round: characters show disagreement,补充, or碰撞.",
-    "- ending: viewpoint forms one closing feeling or judgment.",
-    "- keep the full script around 10 to 16 lines.",
-    "The language should be readable for general users, not too academic and not too archaic, but each figure should still feel distinct.",
+    "- response round: at least 2 to 3 later lines must clearly respond to, question, correct, supplement, or rebut what another character just said.",
+    "- collision round: let at least one real disagreement or追问 happen so the discussion moves, instead of everyone just stating positions.",
+    "- ending: the chosen viewpoint forms one closing feeling or judgment about how the discussion changed.",
+    "- major characters should usually speak at least twice if the full script length allows it.",
+    "- keep the full script around 14 to 22 lines.",
+    "Voice rules:",
+    "- different characters should not all sound like short abstract opinion sentences.",
+    "- let them differ in thinking style, pacing, and wording preference.",
+    "- keep the language readable for general users, not too academic and not too archaic.",
   ].join("\n");
 
   const userPrompt = [
@@ -296,6 +326,9 @@ function buildPrompt(params: {
     `Selected cast:\n${serializeCharacters(cast)}`,
     `Trigger source: ${triggerSource ?? "initial"}`,
     "Build the discussion only from the currently selected characters, current viewpoint, and current topic.",
+    "Let the characters answer each other, not just the topic itself.",
+    "At least some later dialogue lines should clearly pick up another person's point and push back, question it, or extend it.",
+    "The chosen viewpoint should matter not only in narration, but also in how the scene is read and concluded.",
     "Return characters using the exact selected ids in the characters array.",
     "For each dialogue line, speakerId must be one of the selected character ids.",
     "For each narration line, speakerId must be an empty string.",
@@ -492,6 +525,8 @@ function validatePackage(params: {
   const errors: string[] = [];
   const warnings: string[] = [];
   const quotePattern = /["“”‘’「」『』]/;
+  const responsePattern =
+    /(你刚才|你说得|你这话|照你这意思|若照你这么说|可若|但若|可你忽略了|我倒想追问|我不同意|我更在意|你只看到|你说得对|我同意你刚才|接着你这句|正因为你这么说)/;
 
   if (scriptPackage.protocolVersion !== TIME_THEATER_AI_PROTOCOL_VERSION) {
     errors.push(`protocolVersion 必须是 ${TIME_THEATER_AI_PROTOCOL_VERSION}。`);
@@ -509,8 +544,8 @@ function validatePackage(params: {
     errors.push("characters 必须与当前选择的人物完全一致。");
   }
 
-  if (scriptPackage.lines.length < 8 || scriptPackage.lines.length > 18) {
-    errors.push("lines 数量需要控制在 8 到 18 条之间。");
+  if (scriptPackage.lines.length < 10 || scriptPackage.lines.length > 24) {
+    errors.push("lines 数量需要控制在 10 到 24 条之间。");
   }
 
   if (scriptPackage.lines[0]?.type !== "narration") {
@@ -531,10 +566,10 @@ function validatePackage(params: {
         errors.push(`第 ${index + 1} 条 narration 的 speakerId 必须为空。`);
       }
       if (quotePattern.test(line.text)) {
-        errors.push(`第 ${index + 1} 条 narration 不能出现引号对白。`);
+        warnings.push(`第 ${index + 1} 条 narration 出现了引号对白，建议改成更纯的视角观察。`);
       }
       if (line.text.length > 100) {
-        errors.push(`第 ${index + 1} 条 narration 太长。`);
+        warnings.push(`第 ${index + 1} 条 narration 偏长。`);
       }
       if (line.text.length < 18) {
         warnings.push(`第 ${index + 1} 条 narration 偏短。`);
@@ -546,10 +581,10 @@ function validatePackage(params: {
       errors.push(`第 ${index + 1} 条 dialogue 的 speakerId 必须来自已选人物。`);
     }
     if (line.text.includes("\n")) {
-      errors.push(`第 ${index + 1} 条 dialogue 不应换行。`);
+      warnings.push(`第 ${index + 1} 条 dialogue 不应换行。`);
     }
     if (line.text.length > 60) {
-      errors.push(`第 ${index + 1} 条 dialogue 太长。`);
+      warnings.push(`第 ${index + 1} 条 dialogue 偏长。`);
     }
     if (line.text.length < 10) {
       warnings.push(`第 ${index + 1} 条 dialogue 偏短。`);
@@ -557,13 +592,31 @@ function validatePackage(params: {
   });
 
   cast.forEach((figure) => {
-    const hasDialogue = scriptPackage.lines.some(
+    const dialogueCount = scriptPackage.lines.filter(
       (line) => line.type === "dialogue" && line.speakerId === figure.id,
-    );
-    if (!hasDialogue) {
+    ).length;
+    if (dialogueCount === 0) {
       warnings.push(`${figure.name} 当前没有明确 dialogue，可继续观察脚本质量。`);
+    } else if (dialogueCount < 2) {
+      warnings.push(`${figure.name} 当前只有一条 dialogue，讨论感会偏弱。`);
     }
   });
+
+  const dialogueLines = scriptPackage.lines.filter((line) => line.type === "dialogue");
+  const narrationLines = scriptPackage.lines.filter((line) => line.type === "narration");
+  if (dialogueLines.length < 10) {
+    warnings.push("当前 dialogue 总量偏少，整体更容易读成观点摘要。");
+  }
+  if (narrationLines.length > 4) {
+    warnings.push("当前 narration 偏多，可能会削弱同台讨论感。");
+  }
+
+  const responseLikeCount = dialogueLines.filter((line) =>
+    responsePattern.test(line.text),
+  ).length;
+  if (responseLikeCount < 2) {
+    warnings.push("当前脚本里角色之间的明确回应偏少，讨论感还不够强。");
+  }
 
   return {
     ok: errors.length === 0,
@@ -656,7 +709,14 @@ export async function generateTimeTheaterAiScriptPackage(
       ok: true,
       source: "ai",
       scriptPackage: normalized,
-      warning: validation.warnings.length > 0 ? formatValidation(validation) : undefined,
+      warning:
+        validation.warnings.length > 0
+          ? formatValidation({
+              ok: true,
+              errors: [],
+              warnings: validation.warnings,
+            })
+          : undefined,
       debug,
     };
   } catch (error) {

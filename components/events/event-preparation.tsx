@@ -43,7 +43,7 @@ const TEXT = {
   viewpointCountPrefix: "\u53ef\u9009\u89c6\u89d2\uff1a",
   viewpointCountSuffix: "\u4f4d",
   stageReuse:
-    "\u6b63\u5f0f\u5267\u60c5\u9875\u5c06\u7ee7\u7eed\u590d\u7528\u73b0\u6709 AVG \u6c89\u6d78\u5f0f\u821e\u53f0\u3002",
+    "",
   stepOne: "\u7b2c\u4e00\u6b65",
   chooseViewpoint: "\u9009\u62e9\u7b2c\u4e00\u89c6\u89d2",
   fromFigurePrefix: "\u4ece\u4eba\u7269\u9986\u5e26\u5165\uff1a",

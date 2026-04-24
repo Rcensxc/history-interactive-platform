@@ -138,18 +138,38 @@ export function TimeTheaterDemo() {
         speakerId: "",
         text: topic.opening,
       },
-      ...characters.map((figure, index) => ({
-        type: "dialogue" as const,
-        speakerId: figure.id,
-        text:
-          index === 0
-            ? `若把“${topic.title}”摆到我面前，我最先关心的，不会是空话，而是眼前局面究竟先该稳住什么。`
-            : `若让我接着说，我会从${figure.role}的角度回答这个主题，因为真正难的往往不是表态，而是把判断变成可落下去的做法。`,
-      })),
+      ...characters.flatMap((figure, index) => {
+        const nextFigure = characters[(index + 1) % characters.length];
+        return [
+          {
+            type: "dialogue" as const,
+            speakerId: figure.id,
+            text:
+              index === 0
+                ? `若把“${topic.title}”摆到我面前，我最先关心的，不会是空话，而是眼前局面究竟先该稳住什么。`
+                : `若轮到我先表态，我会从${figure.role}的角度回答这个主题，因为真正难的往往不是说得漂亮，而是判断能不能落下去。`,
+          },
+          {
+            type: "dialogue" as const,
+            speakerId: nextFigure.id,
+            text: "你这话说得稳，可若只停在表态上，还是太轻了。真到局势发紧的时候，谁来承担那一步，才会把差别真正拉开。",
+          },
+        ];
+      }),
       {
         type: "narration",
         speakerId: "",
-        text: `${viewpoint.name}重新看向同席的人物，发现这场讨论真正留下来的，不是统一结论，而是他们面对同一个问题时截然不同的判断方式。`,
+        text: `${viewpoint.name}听到这里，已经能感觉到桌上的气氛变了。众人谈的还是同一个主题，可真正碰撞的地方，已经慢慢落在“谁来承担”与“先做什么”上。`,
+      },
+      {
+        type: "dialogue",
+        speakerId: viewpoint.id,
+        text: "听你们说到这里，我更在意的已经不是谁讲得更漂亮，而是谁的判断真能在最难的时候先落到地上。",
+      },
+      {
+        type: "narration",
+        speakerId: "",
+        text: `${viewpoint.name}重新看向同席的人物，发现这场讨论真正留下来的，不是整齐答案，而是他们面对同一个问题时，真正看重的先后与分量。`,
       },
     ],
   });
