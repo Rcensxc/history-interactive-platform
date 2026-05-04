@@ -5,6 +5,7 @@ import { useMemo, useState } from "react";
 import {
   eventCategories,
   eventStatuses,
+  getEventCategoryGroup,
   historicalEvents,
 } from "@/data/history-registry";
 import { getEventCoverImage } from "@/data/site-asset-manifest";
@@ -13,23 +14,26 @@ import { Panel } from "@/components/ui/panel";
 import { PlaceholderArt } from "@/components/ui/placeholder-art";
 
 const statusStyles: Record<string, string> = {
-  已开放试玩:
-    "border-emerald-200/25 bg-emerald-100/10 text-emerald-100",
+  已开放试玩: "border-emerald-200/25 bg-emerald-100/10 text-emerald-100",
   即将开放: "border-amber-200/25 bg-amber-100/10 text-amber-50",
   计划中: "border-white/10 bg-white/5 text-stone-300",
 };
 
+const allCategoryLabel = eventCategories[0] ?? "全部分类";
+const allStatusLabel = eventStatuses[0] ?? "全部状态";
+
 export function EventHall() {
-  const [activeCategory, setActiveCategory] = useState("全部分类");
-  const [activeStatus, setActiveStatus] = useState("全部状态");
+  const [activeCategory, setActiveCategory] = useState(allCategoryLabel);
+  const [activeStatus, setActiveStatus] = useState(allStatusLabel);
   const [selectedId, setSelectedId] = useState(historicalEvents[0]?.id ?? "");
 
   const filteredEvents = useMemo(() => {
     return historicalEvents.filter((eventItem) => {
       const categoryMatch =
-        activeCategory === "全部分类" || eventItem.category === activeCategory;
+        activeCategory === allCategoryLabel ||
+        getEventCategoryGroup(eventItem.category) === activeCategory;
       const statusMatch =
-        activeStatus === "全部状态" || eventItem.statusLabel === activeStatus;
+        activeStatus === allStatusLabel || eventItem.statusLabel === activeStatus;
 
       return categoryMatch && statusMatch;
     });
@@ -63,7 +67,7 @@ export function EventHall() {
 
             <div className="space-y-4">
               <div>
-                <p className="mb-3 text-sm text-stone-400">按类型筛选</p>
+                <p className="mb-3 text-sm text-stone-400">按分类筛选</p>
                 <div className="flex flex-wrap gap-3">
                   {eventCategories.map((category) => (
                     <button
@@ -161,7 +165,7 @@ export function EventHall() {
           </div>
         ) : (
           <Panel className="p-8 text-center text-stone-300">
-            当前筛选条件下还没有事件，请切换类型或开放状态再试。
+            当前筛选条件下还没有事件，请切换分类或开放状态再试。
           </Panel>
         )}
       </div>
@@ -198,7 +202,7 @@ export function EventHall() {
               </div>
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="rounded-[20px] border border-white/10 bg-white/5 p-4">
-                  <p className="text-stone-500">类型</p>
+                  <p className="text-stone-500">分类</p>
                   <p className="mt-2 text-stone-100">{selectedEvent.category}</p>
                 </div>
                 <div className="rounded-[20px] border border-white/10 bg-white/5 p-4">

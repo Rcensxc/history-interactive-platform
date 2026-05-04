@@ -16,7 +16,7 @@ import type {
 export const HONGMEN_AI_EVENT_ID = "hongmen-banquet";
 export const HONGMEN_AI_VIEWPOINT_ID = "liubang";
 
-const HONGMEN_AI_DEFAULT_MODEL = "openai/gpt-4o-mini";
+const HONGMEN_AI_DEFAULT_MODEL = "Qwen3Flash";
 const HONGMEN_AI_SCRIPT_PROTOCOL_VERSION = "hongmen-linear-script-v1" as const;
 
 type HongmenBeatId =
@@ -49,7 +49,7 @@ type HongmenAiDebugInfo = {
   upstreamUrl: string;
   model: string;
   hasApiKey: boolean;
-  apiKeySource: "OPENROUTER_API_KEY" | "OPENAI_API_KEY" | "missing";
+  apiKeySource: "OPENROUTER_API_KEY" | "API_KEY" | "missing";
   refererHeader: string;
   titleHeader: string;
   requestShape: {
@@ -86,7 +86,7 @@ type HongmenAiDebugInfo = {
     errors: string[];
     warnings: string[];
   };
-};
+};//定义了鸿门AI故事包请求的调试信息结构
 
 export type HongmenAiStoryPackageRequest = {
   eventId: string;
@@ -135,7 +135,7 @@ const hongmenAiBackdropMap = {
     description: "背景占位：营帐边缘与火光背后的阴影，退场与脱身都藏在缝隙里。",
   },
 } as const satisfies Record<string, PlaceholderAsset>;
-
+//定义了鸿门AI故事包中使用的背景占位资源
 const hongmenSpeakerVisualKeyMap = {
   项羽: "xiangyu",
   项伯: "xiangbo",
@@ -264,7 +264,7 @@ const hongmenBeatBlueprints: HongmenBeatBlueprint[] = [
     allowedSpeakers: [],
   },
 ];
-
+//定义了鸿门宴故事的节拍蓝图，包括每个节拍的标题、戏剧目标、背景占位、台词数量范围、是否允许旁白以及允许出现的角色。
 function getHongmenPlayableBase(): EventPlayableContent {
   const playableContent = getEventPlayableContent(HONGMEN_AI_EVENT_ID);
   if (!playableContent) {
@@ -297,20 +297,20 @@ function normalizeText(text: string) {
     .replace(/\n{3,}/g, "\n\n")
     .replace(/[ \t]{2,}/g, " ")
     .trim();
-}
+}//规范化文本，去除多余的空格和换行
 
 function createHongmenAiRequestId() {
   return `hongmen-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
-function getOpenAiConfig() {
+function getAiConfig() {
   const openRouterApiKey = process.env.OPENROUTER_API_KEY?.trim();
-  const openAiApiKey = process.env.OPENAI_API_KEY?.trim();
-  const apiKey = openRouterApiKey || openAiApiKey || "";
+  const AiApiKey = process.env.AI_API_KEY?.trim();
+  const apiKey = openRouterApiKey || AiApiKey || "";
   const apiKeySource: HongmenAiDebugInfo["apiKeySource"] = openRouterApiKey
     ? "OPENROUTER_API_KEY"
-    : openAiApiKey
-      ? "OPENAI_API_KEY"
+    : AiApiKey
+      ? "API_KEY"
       : "missing";
 
   return {
@@ -318,7 +318,7 @@ function getOpenAiConfig() {
     apiKeySource,
     model:
       process.env.OPENROUTER_MODEL?.trim() ||
-      process.env.OPENAI_MODEL?.trim() ||
+      process.env.AI_MODEL?.trim() ||
       HONGMEN_AI_DEFAULT_MODEL,
     upstreamUrl:
       process.env.OPENROUTER_RESPONSES_URL?.trim() ||
@@ -328,10 +328,10 @@ function getOpenAiConfig() {
     titleHeader:
       process.env.OPENROUTER_TITLE?.trim() || "History Interactive Platform",
   };
-}
+}//获取AI配置，包括API密钥、模型名称、上游URL和请求头信息
 
 function createHongmenAiDebugInfo(
-  config: ReturnType<typeof getOpenAiConfig>,
+  config: ReturnType<typeof getAiConfig>,
 ): HongmenAiDebugInfo {
   return {
     requestId: "",
@@ -356,7 +356,7 @@ function createHongmenAiDebugInfo(
       upstreamCallCount: 0,
     },
   };
-}
+}//创建一个初始的调试信息对象
 
 async function readResponseBody(response: Response) {
   try {
@@ -410,7 +410,7 @@ function extractResponseText(payload: unknown) {
   }
 
   return "";
-}
+}//从上游响应的原始负载中提取文本内容
 
 function serializeBeatBlueprints() {
   return hongmenBeatBlueprints
@@ -431,7 +431,7 @@ function serializeBeatBlueprints() {
       ].join(" | ");
     })
     .join("\n");
-}
+}//将节拍蓝图序列化为Markdown格式
 
 function buildHongmenStoryPackagePrompt(
   params: HongmenAiStoryPackageRequest,
@@ -492,7 +492,7 @@ function buildHongmenStoryPackagePrompt(
     systemPrompt,
     userPrompt,
   };
-}
+}//构建发送给AI的系统提示和用户提示词
 
 async function requestStructuredHongmenScriptPackage(params: {
   request: HongmenAiStoryPackageRequest;
@@ -501,13 +501,13 @@ async function requestStructuredHongmenScriptPackage(params: {
   scriptPackage: HongmenAiScriptPackage;
   debug: HongmenAiDebugInfo;
 }> {
-  const config = getOpenAiConfig();
+  const config = getAiConfig();
   const { apiKey, model, upstreamUrl, refererHeader, titleHeader } = config;
   const debug = createHongmenAiDebugInfo(config);
 
   if (!apiKey) {
     throw new Error(
-      "Missing API key. Please set OPENROUTER_API_KEY or OPENAI_API_KEY and restart the dev server.",
+      "APIkey丢失，设置API_KEY并重启开发服务器。",
     );
   }
 
@@ -604,7 +604,7 @@ async function requestStructuredHongmenScriptPackage(params: {
       },
     }),
   });
-
+//向上游AI服务发送请求
   if (!response.ok) {
     const upstreamBody = await readResponseBody(response);
     debug.timings.upstreamRequestMs = Number((performance.now() - upstreamStart).toFixed(1));
@@ -622,7 +622,7 @@ async function requestStructuredHongmenScriptPackage(params: {
   const payload = (await response.json()) as unknown;
   const outputText = extractResponseText(payload);
   if (!outputText) {
-    throw new Error("OpenAI returned empty structured output.");
+    throw new Error("AI返回的是空结构化结果.");
   }
   debug.metrics.upstreamOutputLength = outputText.length;
   debug.timings.extractOutputMs = Number((performance.now() - extractStart).toFixed(1));
@@ -805,7 +805,7 @@ function validateHongmenScriptPackage(
     errors,
     warnings,
   };
-}
+}//验证AI生成的剧本包是否符合预期的结构和内容要求，返回错误和警告信息
 
 function formatHongmenFatalValidation(errors: string[]) {
   return errors.join(" ");
@@ -845,7 +845,7 @@ function createSceneStandee(speaker: string): EventSceneStandee {
     visualKey,
     hideForViewpoint: true,
   };
-}
+}//根据说话人创建场景立绘，刘邦视角不显示任何立绘，其他角色如果没有预设的视觉资源则隐藏立绘
 
 function adaptHongmenScriptPackageToPlayableContent(
   scriptPackage: HongmenAiScriptPackage,
@@ -865,7 +865,7 @@ function adaptHongmenScriptPackageToPlayableContent(
         standee: createSceneStandee(line.speaker),
       } satisfies EventScene;
     });
-  });
+  });//将每个 beat 的 line 转换为场景
 
   const scenes = flattened.map((scene, index) => ({
     ...scene,
@@ -1005,7 +1005,7 @@ export async function generateHongmenAiStoryPackage(
       debug,
     };
   } catch (error) {
-    const debug = createHongmenAiDebugInfo(getOpenAiConfig());
+    const debug = createHongmenAiDebugInfo(getAiConfig());
     const errorMessage =
       error instanceof Error ? error.message : "Unknown AI error.";
     const statusMatch = /status (\d+)\s+([^.]+)\. Body:([\s\S]*)$/i.exec(errorMessage);
@@ -1030,4 +1030,4 @@ export async function generateHongmenAiStoryPackage(
       debug,
     };
   }
-}
+}//主函数，根据请求参数生成鸿门宴AI剧本包，并处理各种错误和警告情况，最终返回可播放内容或回退到本地静态剧情

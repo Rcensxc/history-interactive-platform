@@ -11,7 +11,7 @@ import type {
   EventStateUpdate,
   EventViewpoint,
   PlaceholderAsset,
-} from "@/types/content";
+} from "@/types/content";//引入所有类型定义
 
 export const aiStructuredSceneProtocol: AiStructuredSceneProtocolDefinition = {
   protocolVersion: "ai-scene-v1",
@@ -42,8 +42,7 @@ export const aiStructuredSceneProtocol: AiStructuredSceneProtocolDefinition = {
     "timed choices or animation directives",
     "freeform prose that requires the player to infer structure",
   ],
-};
-
+};//定义了AI结构化场景协议
 type AdaptAiStructuredStoryParams = {
   eventId: string;
   output: AiStructuredStoryOutput;
@@ -59,7 +58,7 @@ function normalizeStateUpdate(stateUpdate?: EventStateUpdate) {
   }
 
   return stateUpdate;
-}
+}//规范化状态更新，如果没有有效的状态更新则返回undefined
 
 function normalizeChoice(choice: AiStructuredSceneChoice): EventChoice {
   return {
@@ -69,7 +68,7 @@ function normalizeChoice(choice: AiStructuredSceneChoice): EventChoice {
     isHistorical: choice.isHistorical,
     nextSceneId: choice.nextSceneId,
     stateUpdate: normalizeStateUpdate(choice.stateUpdate),
-  };
+  };//规范化选择，将AI结构化场景选择转换为事件选择
 }
 
 function normalizeStandee(scene: AiStructuredSceneNode): EventSceneStandee {

@@ -7,6 +7,10 @@ import {
   getCharacterStandeeImage,
 } from "@/data/character-asset-manifest";
 import {
+  figureDynastyGroups,
+  figureRoleGroups,
+  getFigureDynastyGroup,
+  getFigureRoleGroup,
   figureRelatedExperiences,
   historicalFigures,
 } from "@/data/history-registry";
@@ -84,14 +88,8 @@ function ExperienceGroup({
 }
 
 export function FigureGallery() {
-  const dynasties = useMemo(
-    () => ["全部朝代", ...new Set(historicalFigures.map((figure) => figure.dynasty))],
-    [],
-  );
-  const roles = useMemo(
-    () => ["全部身份", ...new Set(historicalFigures.map((figure) => figure.role))],
-    [],
-  );
+  const dynasties = useMemo(() => [...figureDynastyGroups], []);
+  const roles = useMemo(() => [...figureRoleGroups], []);
 
   const [activeDynasty, setActiveDynasty] = useState("全部朝代");
   const [activeRole, setActiveRole] = useState("全部身份");
@@ -100,8 +98,10 @@ export function FigureGallery() {
   const filteredFigures = useMemo(() => {
     return historicalFigures.filter((figure) => {
       const dynastyMatch =
-        activeDynasty === "全部朝代" || figure.dynasty === activeDynasty;
-      const roleMatch = activeRole === "全部身份" || figure.role === activeRole;
+        activeDynasty === "全部朝代" ||
+        getFigureDynastyGroup(figure.dynasty) === activeDynasty;
+      const roleMatch =
+        activeRole === "全部身份" || getFigureRoleGroup(figure) === activeRole;
 
       return dynastyMatch && roleMatch;
     });

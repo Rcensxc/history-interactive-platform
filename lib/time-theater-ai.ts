@@ -6,7 +6,7 @@ import type {
   TimeTheaterTopic,
 } from "@/types/content";
 
-const TIME_THEATER_AI_DEFAULT_MODEL = "openai/gpt-4o-mini";
+const TIME_THEATER_AI_DEFAULT_MODEL = "Qwen3FLash";
 const TIME_THEATER_AI_PROTOCOL_VERSION = "time-theater-linear-v1" as const;
 
 type TimeTheaterAiDebugInfo = {
@@ -14,7 +14,7 @@ type TimeTheaterAiDebugInfo = {
   upstreamUrl: string;
   model: string;
   hasApiKey: boolean;
-  apiKeySource: "OPENROUTER_API_KEY" | "OPENAI_API_KEY" | "missing";
+  apiKeySource: "OPENROUTER_API_KEY" | "AI_API_KEY" | "missing";
   refererHeader: string;
   titleHeader: string;
   requestShape: {
@@ -83,14 +83,14 @@ function normalizeSpeakerToken(value: string) {
   return value.replace(/[\s·•・，。、；：“”"'（）()【】\-_]/g, "").toLowerCase();
 }
 
-function getOpenAiConfig() {
+function getAiConfig() {
   const openRouterApiKey = process.env.OPENROUTER_API_KEY?.trim();
-  const openAiApiKey = process.env.OPENAI_API_KEY?.trim();
-  const apiKey = openRouterApiKey || openAiApiKey || "";
+  const aiApiKey = process.env.AI_API_KEY?.trim();
+  const apiKey = openRouterApiKey || aiApiKey || "";
   const apiKeySource: TimeTheaterAiDebugInfo["apiKeySource"] = openRouterApiKey
     ? "OPENROUTER_API_KEY"
-    : openAiApiKey
-      ? "OPENAI_API_KEY"
+    : aiApiKey
+      ? "AI_API_KEY"
       : "missing";
 
   return {
@@ -98,7 +98,7 @@ function getOpenAiConfig() {
     apiKeySource,
     model:
       process.env.OPENROUTER_MODEL?.trim() ||
-      process.env.OPENAI_MODEL?.trim() ||
+      process.env.AI_MODEL?.trim() ||
       TIME_THEATER_AI_DEFAULT_MODEL,
     upstreamUrl:
       process.env.OPENROUTER_RESPONSES_URL?.trim() ||
@@ -111,7 +111,7 @@ function getOpenAiConfig() {
 }
 
 function createDebugInfo(
-  config: ReturnType<typeof getOpenAiConfig>,
+  config: ReturnType<typeof getAiConfig>,
 ): TimeTheaterAiDebugInfo {
   return {
     requestId: "",
@@ -351,13 +351,13 @@ async function requestScriptPackage(params: {
   scriptPackage: TimeTheaterAiScriptPackage;
   debug: TimeTheaterAiDebugInfo;
 }> {
-  const config = getOpenAiConfig();
+  const config = getAiConfig();
   const { apiKey, model, upstreamUrl, refererHeader, titleHeader } = config;
   const debug = createDebugInfo(config);
 
   if (!apiKey) {
     throw new Error(
-      "Missing API key. Please set OPENROUTER_API_KEY or OPENAI_API_KEY and restart the dev server.",
+      "APIkey丢失，设置API_KEY并重启开发服务器。",
     );
   }
 
@@ -473,7 +473,7 @@ async function requestScriptPackage(params: {
   const payload = (await response.json()) as unknown;
   const outputText = extractResponseText(payload);
   if (!outputText) {
-    throw new Error("OpenAI returned empty structured output.");
+    throw new Error("AI返回的是空结构化结果");
   }
   debug.metrics.upstreamOutputLength = outputText.length;
   debug.timings.extractOutputMs = Number((performance.now() - extractStart).toFixed(1));
@@ -720,7 +720,7 @@ export async function generateTimeTheaterAiScriptPackage(
       debug,
     };
   } catch (error) {
-    const debug = createDebugInfo(getOpenAiConfig());
+    const debug = createDebugInfo(getAiConfig());
     const errorMessage =
       error instanceof Error ? error.message : "Unknown AI error.";
     const statusMatch = /status (\d+)\s+([^.]+)\. Body:([\s\S]*)$/i.exec(errorMessage);

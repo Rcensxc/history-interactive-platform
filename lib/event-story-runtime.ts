@@ -12,6 +12,7 @@ import type {
   PlaceholderAsset,
 } from "@/types/content";
 import { adaptAiStructuredStoryToPlayableContent } from "@/lib/ai-scene-adapter";
+import { getCharacterStandeeImage } from "@/data/character-asset-manifest";
 
 export const eventStoryPlayerCapabilities: EventStoryPlayerCapabilities = {
   protocolVersion: "event-story-v1",
@@ -34,7 +35,7 @@ export const eventStoryPlayerCapabilities: EventStoryPlayerCapabilities = {
     "animation, audio, or camera directives in scene data",
     "AI-generated raw prose without structured scene nodes",
   ],
-};
+};//定义了事件故事播放器的能力
 
 type LegacyEventSceneInput = {
   id: string;
@@ -48,7 +49,7 @@ type LegacyEventSceneInput = {
   choices?: EventChoice[];
   nextSceneId?: string;
   stateUpdate?: EventStateUpdate;
-};
+};//定义了传统事件场景输入的类型
 
 type BaseEventPlayableContentInput = Omit<
   EventPlayableContent,
@@ -105,7 +106,7 @@ function normalizeEventScene(
     nextSceneId: scene.nextSceneId,
     stateUpdate: scene.stateUpdate,
   };
-}
+}//将传统事件场景输入规范化为事件场景
 
 export function createEventPlayableContent(
   input: EventPlayableContentInput,
@@ -139,14 +140,14 @@ export function createEventSceneMap(scenes: EventScene[]) {
   return Object.fromEntries(
     scenes.map((scene) => [scene.sceneId, scene]),
   ) as Record<string, EventScene>;
-}
+}//创建一个事件场景映射表，方便通过场景ID快速访问场景数据
 
 export function resolveSceneBackground(
   playableContent: EventPlayableContent,
   scene: EventScene,
 ): PlaceholderAsset {
   return scene.background ?? playableContent.defaultBackdrop;
-}
+}//解析场景背景，如果场景没有指定背景则使用可播放内容的默认背景
 
 export function resolveSceneStandee(params: {
   scene: EventScene;
@@ -173,6 +174,12 @@ export function resolveSceneStandee(params: {
       subtitle: selectedViewpoint.title,
       alignment: "center" as const,
     };
+
+  // Temporary roles may speak, but should not be promoted into stage standees
+  // unless they have a real shared standee asset or an explicit image mapping.
+  if (!visual.image && !getCharacterStandeeImage(visualKey)) {
+    return null;
+  }
 
   return {
     visualKey,

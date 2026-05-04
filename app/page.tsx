@@ -1,64 +1,36 @@
-import Link from "next/link";
 import { EntryCard } from "@/components/home/entry-card";
-import { Panel } from "@/components/ui/panel";
-import { PlaceholderArt } from "@/components/ui/placeholder-art";
 import { getSiteHeroImage } from "@/data/site-asset-manifest";
-import { homeEntries, homeHighlights } from "@/data/site-content";
+import { homeEntries } from "@/data/site-content";
 
 export default function Home() {
+  const heroImage = getSiteHeroImage();
+
   return (
     <div className="mx-auto max-w-7xl px-6 py-10 md:px-8 md:py-14">
-      <section className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
-        <Panel className="relative overflow-hidden p-8 md:p-10">
-          <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-amber-200/35 to-transparent" />
-          <div className="space-y-8">
-            <div className="space-y-4">
-              <p className="text-xs uppercase tracking-[0.4em] text-amber-200/70">
-                History Interactive Demo
-              </p>
-              <h1 className="max-w-3xl font-display text-5xl leading-tight text-stone-50 md:text-7xl">
-                亲身进入历史现场。
-              </h1>
-              <p className="max-w-2xl text-base leading-8 text-stone-300 md:text-lg">
-                我们希望通过沉浸式的互动体验，让历史不再遥远，而是生动、有趣、触手可及。
-              </p>
-            </div>
+      <section className="relative min-h-[72vh] overflow-hidden rounded-[36px] border border-white/10">
+        {heroImage ? (
+          <div
+            className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+            style={{ backgroundImage: `url("${heroImage}")` }}
+          />
+        ) : null}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(214,172,87,0.16),transparent_42%)]" />
+        <div className="absolute inset-0 bg-gradient-to-r from-black/78 via-black/58 to-black/28" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/88 via-black/32 to-black/10" />
 
-            <div className="flex flex-wrap gap-3">
-              <Link
-                href="/events"
-                className="rounded-full border border-amber-200/25 bg-amber-100/10 px-5 py-3 text-sm text-amber-50 transition hover:border-amber-200/40 hover:bg-amber-100/15"
-              >
-                进入历史事件馆
-              </Link>
-              <Link
-                href="/figures"
-                className="rounded-full border border-white/10 bg-white/5 px-5 py-3 text-sm text-stone-200 transition hover:border-white/20 hover:text-stone-50"
-              >
-                进入历史人物馆
-              </Link>
-            </div>
-
-            <div className="grid gap-3 md:grid-cols-3">
-              {homeHighlights.map((item) => (
-                <div
-                  key={item}
-                  className="rounded-[22px] border border-white/10 bg-black/15 px-4 py-4 text-sm text-stone-300"
-                >
-                  {item}
-                </div>
-              ))}
-            </div>
+        <div className="relative flex min-h-[72vh] items-center px-8 py-14 md:px-12 lg:px-16">
+          <div className="max-w-3xl space-y-6">
+            <p className="text-xs uppercase tracking-[0.4em] text-amber-200/70">
+              History Interactive Platform
+            </p>
+            <h1 className="font-display text-5xl leading-tight text-stone-50 md:text-7xl">
+              亲身进入历史现场。
+            </h1>
+            <p className="max-w-2xl text-base leading-8 text-stone-200/90 md:text-lg">
+              我们希望通过沉浸式的互动体验，让你体验到的历史不再遥远，而是生动的、有趣的、触手可及的。
+            </p>
           </div>
-        </Panel>
-
-        <PlaceholderArt
-          label="百世浏芳"
-          caption="【封面占位图】"
-          tone="amber"
-          className="min-h-[520px]"
-          imageSrc={getSiteHeroImage()}
-        />
+        </div>
       </section>
 
       <section className="mt-8 space-y-5">
@@ -72,7 +44,7 @@ export default function Home() {
             </h2>
           </div>
           <p className="max-w-xl text-sm leading-7 text-stone-400">
-            通过不同的入口，你可以选择自己喜欢的历史体验方式。
+            通过不同的入口，你可以选择自己更喜欢的历史体验方式。
           </p>
         </div>
 

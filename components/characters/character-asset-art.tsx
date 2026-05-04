@@ -1,3 +1,4 @@
+//React 组件，用于显示角色的艺术资源（立绘或肖像）。如果提供了有效的图像 URL，则显示图像；否则显示一个占位符艺术组件。组件还支持不同的视觉风格和布局选项。
 "use client";
 
 import Image from "next/image";

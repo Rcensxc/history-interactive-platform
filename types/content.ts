@@ -259,6 +259,275 @@ export type RedCliffsAiScriptPackage = {
   beats: RedCliffsAiScriptBeat[];
 };
 
+export type ShenlongAiScriptProtocolVersion = "shenlong-linear-script-v1";
+
+export type ShenlongAiScriptLine = {
+  speaker: string;
+  text: string;
+};
+
+export type ShenlongAiScriptBeat = {
+  beatId: string;
+  lines: ShenlongAiScriptLine[];
+};
+
+export type ShenlongAiScriptPackage = {
+  packageId: string;
+  storyId: string;
+  protocolVersion: ShenlongAiScriptProtocolVersion;
+  viewpointId: string;
+  beats: ShenlongAiScriptBeat[];
+};
+
+export type JingkeAiScriptProtocolVersion = "jingke-linear-script-v1";
+
+export type JingkeAiScriptLine = {
+  speaker: string;
+  text: string;
+};
+
+export type JingkeAiScriptBeat = {
+  beatId: string;
+  lines: JingkeAiScriptLine[];
+};
+
+export type JingkeAiScriptPackage = {
+  packageId: string;
+  storyId: string;
+  protocolVersion: JingkeAiScriptProtocolVersion;
+  viewpointId: string;
+  beats: JingkeAiScriptBeat[];
+};
+
+export type HeroesOverWineAiScriptProtocolVersion =
+  "heroes-over-wine-linear-script-v1";
+
+export type HeroesOverWineAiScriptLine = {
+  speaker: string;
+  text: string;
+};
+
+export type HeroesOverWineAiScriptBeat = {
+  beatId: string;
+  lines: HeroesOverWineAiScriptLine[];
+};
+
+export type HeroesOverWineAiScriptPackage = {
+  packageId: string;
+  storyId: string;
+  protocolVersion: HeroesOverWineAiScriptProtocolVersion;
+  viewpointId: string;
+  beats: HeroesOverWineAiScriptBeat[];
+};
+
+export type EmptyCityAiScriptProtocolVersion = "empty-city-linear-script-v1";
+
+export type EmptyCityAiScriptLine = {
+  speaker: string;
+  text: string;
+};
+
+export type EmptyCityAiScriptBeat = {
+  beatId: string;
+  lines: EmptyCityAiScriptLine[];
+};
+
+export type EmptyCityAiScriptPackage = {
+  packageId: string;
+  storyId: string;
+  protocolVersion: EmptyCityAiScriptProtocolVersion;
+  viewpointId: string;
+  beats: EmptyCityAiScriptBeat[];
+};
+
+export type BreakCauldronsAiScriptProtocolVersion =
+  "break-cauldrons-linear-script-v1";
+
+export type BreakCauldronsAiScriptLine = {
+  speaker: string;
+  text: string;
+};
+
+export type BreakCauldronsAiScriptBeat = {
+  beatId: string;
+  lines: BreakCauldronsAiScriptLine[];
+};
+
+export type BreakCauldronsAiScriptPackage = {
+  packageId: string;
+  storyId: string;
+  protocolVersion: BreakCauldronsAiScriptProtocolVersion;
+  viewpointId: string;
+  beats: BreakCauldronsAiScriptBeat[];
+};
+
+export type BearingThornsAiScriptProtocolVersion =
+  "bearing-thorns-linear-script-v1";
+
+export type BearingThornsAiScriptLine = {
+  speaker: string;
+  text: string;
+};
+
+export type BearingThornsAiScriptBeat = {
+  beatId: string;
+  lines: BearingThornsAiScriptLine[];
+};
+
+export type BearingThornsAiScriptPackage = {
+  packageId: string;
+  storyId: string;
+  protocolVersion: BearingThornsAiScriptProtocolVersion;
+  viewpointId: string;
+  beats: BearingThornsAiScriptBeat[];
+};
+
+export type CupWineAiScriptProtocolVersion = "cup-wine-linear-script-v1";
+
+export type CupWineAiScriptLine = {
+  speaker: string;
+  text: string;
+};
+
+export type CupWineAiScriptBeat = {
+  beatId: string;
+  lines: CupWineAiScriptLine[];
+};
+
+export type CupWineAiScriptPackage = {
+  packageId: string;
+  storyId: string;
+  protocolVersion: CupWineAiScriptProtocolVersion;
+  viewpointId: string;
+  beats: CupWineAiScriptBeat[];
+};
+
+export type TianjiHorseRaceAiScriptProtocolVersion =
+  "tianji-horse-race-linear-script-v1";
+
+export type TianjiHorseRaceAiScriptLine = {
+  speaker: string;
+  text: string;
+};
+
+export type TianjiHorseRaceAiScriptBeat = {
+  beatId: string;
+  lines: TianjiHorseRaceAiScriptLine[];
+};
+
+export type TianjiHorseRaceAiScriptPackage = {
+  packageId: string;
+  storyId: string;
+  protocolVersion: TianjiHorseRaceAiScriptProtocolVersion;
+  viewpointId: string;
+  beats: TianjiHorseRaceAiScriptBeat[];
+};
+
+export type ScrapeBoneAiScriptProtocolVersion =
+  "scrape-bone-linear-script-v1";
+
+export type ScrapeBoneAiScriptLine = {
+  speaker: string;
+  text: string;
+};
+
+export type ScrapeBoneAiScriptBeat = {
+  beatId: string;
+  lines: ScrapeBoneAiScriptLine[];
+};
+
+export type ScrapeBoneAiScriptPackage = {
+  packageId: string;
+  storyId: string;
+  protocolVersion: ScrapeBoneAiScriptProtocolVersion;
+  viewpointId: string;
+  beats: ScrapeBoneAiScriptBeat[];
+};
+
+export type SmashWaterJarAiScriptProtocolVersion =
+  "smash-water-jar-linear-script-v1";
+
+export type SmashWaterJarAiScriptLine = {
+  speaker: string;
+  text: string;
+};
+
+export type SmashWaterJarAiScriptBeat = {
+  beatId: string;
+  lines: SmashWaterJarAiScriptLine[];
+};
+
+export type SmashWaterJarAiScriptPackage = {
+  packageId: string;
+  storyId: string;
+  protocolVersion: SmashWaterJarAiScriptProtocolVersion;
+  viewpointId: string;
+  beats: SmashWaterJarAiScriptBeat[];
+};
+
+export type DebateWithWuScholarsAiScriptProtocolVersion =
+  "debate-with-wu-scholars-linear-script-v1";
+
+export type DebateWithWuScholarsAiScriptLine = {
+  speaker: string;
+  text: string;
+};
+
+export type DebateWithWuScholarsAiScriptBeat = {
+  beatId: string;
+  lines: DebateWithWuScholarsAiScriptLine[];
+};
+
+export type DebateWithWuScholarsAiScriptPackage = {
+  packageId: string;
+  storyId: string;
+  protocolVersion: DebateWithWuScholarsAiScriptProtocolVersion;
+  viewpointId: string;
+  beats: DebateWithWuScholarsAiScriptBeat[];
+};
+
+export type HumenDestroyOpiumAiScriptProtocolVersion =
+  "humen-destroy-opium-linear-script-v1";
+
+export type HumenDestroyOpiumAiScriptLine = {
+  speaker: string;
+  text: string;
+};
+
+export type HumenDestroyOpiumAiScriptBeat = {
+  beatId: string;
+  lines: HumenDestroyOpiumAiScriptLine[];
+};
+
+export type HumenDestroyOpiumAiScriptPackage = {
+  packageId: string;
+  storyId: string;
+  protocolVersion: HumenDestroyOpiumAiScriptProtocolVersion;
+  viewpointId: string;
+  beats: HumenDestroyOpiumAiScriptBeat[];
+};
+
+export type BoilBeansAiScriptProtocolVersion =
+  "boil-beans-linear-script-v1";
+
+export type BoilBeansAiScriptLine = {
+  speaker: string;
+  text: string;
+};
+
+export type BoilBeansAiScriptBeat = {
+  beatId: string;
+  lines: BoilBeansAiScriptLine[];
+};
+
+export type BoilBeansAiScriptPackage = {
+  packageId: string;
+  storyId: string;
+  protocolVersion: BoilBeansAiScriptProtocolVersion;
+  viewpointId: string;
+  beats: BoilBeansAiScriptBeat[];
+};
+
 export type AiStructuredSceneProtocolDefinition = {
   protocolVersion: AiStructuredStoryProtocolVersion;
   supportedSceneTypes: EventSceneType[];

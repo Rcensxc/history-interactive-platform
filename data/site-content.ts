@@ -13,7 +13,7 @@ export const homeEntries: HomeEntry[] = [
     eyebrow: "人物馆",
     title: "来认识认识你或熟悉或陌生的历史人物",
     description:
-      "用卡片和筛选快速浏览人物，了解他们所处的时代、身份和关键事件。",
+      "你可以用卡片和筛选快速浏览人物，了解他们所处的时代、身份和关键事件。",
     cta: "进入历史人物馆",
     highlight: "浏览历史人物",
     tone: "bronze",
@@ -21,7 +21,7 @@ export const homeEntries: HomeEntry[] = [
   {
     href: "/events",
     eyebrow: "事件馆",
-    title: "先选历史事件，再决定你想从谁的视角进入现场",
+    title: "先选历史事件，再决定你想从谁的视角进入希望体验的现场",
     description:
       "历史事件馆收纳不同事件，来选择你想体验哪一件?",
     cta: "进入历史事件馆",
@@ -31,7 +31,7 @@ export const homeEntries: HomeEntry[] = [
   {
     href: "/time-theater",
     eyebrow: "跨时空互动",
-    title: "让不同时代的人同台说话，看看他们思维的碰撞",
+    title: "让不同时代的人同台说话，看看他们思维的碰撞会怎么样",
     description:
       "自由挑选人物、设定视角和讨论主题，体验未来 AI 互动剧场。",
     cta: "进入跨时空剧场",

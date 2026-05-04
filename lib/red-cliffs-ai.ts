@@ -24,7 +24,7 @@ export const RED_CLIFFS_AI_SUPPORTED_VIEWPOINT_IDS = [
 type SupportedRedCliffsViewpointId =
   (typeof RED_CLIFFS_AI_SUPPORTED_VIEWPOINT_IDS)[number];
 
-const RED_CLIFFS_AI_DEFAULT_MODEL = "openai/gpt-4o-mini";
+const RED_CLIFFS_AI_DEFAULT_MODEL = "Qwen3Flash";
 const RED_CLIFFS_AI_SCRIPT_PROTOCOL_VERSION =
   "red-cliffs-linear-script-v1" as const;
 
@@ -64,7 +64,7 @@ type RedCliffsAiDebugInfo = {
   upstreamUrl: string;
   model: string;
   hasApiKey: boolean;
-  apiKeySource: "OPENROUTER_API_KEY" | "OPENAI_API_KEY" | "missing";
+  apiKeySource: "OPENROUTER_API_KEY" | "API_KEY" | "missing";
   refererHeader: string;
   titleHeader: string;
   requestShape: {
@@ -776,14 +776,14 @@ function createRedCliffsAiRequestId() {
   return `red-cliffs-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
-function getOpenAiConfig() {
+function getAiConfig() {
   const openRouterApiKey = process.env.OPENROUTER_API_KEY?.trim();
-  const openAiApiKey = process.env.OPENAI_API_KEY?.trim();
-  const apiKey = openRouterApiKey || openAiApiKey || "";
+  const aiApiKey = process.env.AI_API_KEY?.trim();
+  const apiKey = openRouterApiKey || aiApiKey || "";
   const apiKeySource: RedCliffsAiDebugInfo["apiKeySource"] = openRouterApiKey
     ? "OPENROUTER_API_KEY"
-    : openAiApiKey
-      ? "OPENAI_API_KEY"
+    : aiApiKey
+      ? "API_KEY"
       : "missing";
 
   return {
@@ -791,7 +791,7 @@ function getOpenAiConfig() {
     apiKeySource,
     model:
       process.env.OPENROUTER_MODEL?.trim() ||
-      process.env.OPENAI_MODEL?.trim() ||
+      process.env.AI_MODEL?.trim() ||
       RED_CLIFFS_AI_DEFAULT_MODEL,
     upstreamUrl:
       process.env.OPENROUTER_RESPONSES_URL?.trim() ||
@@ -803,7 +803,7 @@ function getOpenAiConfig() {
   };
 }
 
-function createRedCliffsAiDebugInfo(config = getOpenAiConfig()): RedCliffsAiDebugInfo {
+function createRedCliffsAiDebugInfo(config = getAiConfig()): RedCliffsAiDebugInfo {
   return {
     requestId: "",
     upstreamUrl: config.upstreamUrl,
@@ -964,13 +964,13 @@ async function requestStructuredRedCliffsScriptPackage(params: {
   scriptPackage: RedCliffsAiScriptPackage;
   debug: RedCliffsAiDebugInfo;
 }> {
-  const config = getOpenAiConfig();
+  const config = getAiConfig();
   const { apiKey, model, upstreamUrl, refererHeader, titleHeader } = config;
   const debug = createRedCliffsAiDebugInfo(config);
 
   if (!apiKey) {
     throw new Error(
-      "Missing API key. Please set OPENROUTER_API_KEY or OPENAI_API_KEY and restart the dev server.",
+      "AIkey丢失，重新配置API_KEY 环境变量后再试。",
     );
   }
 
@@ -1099,7 +1099,7 @@ async function requestStructuredRedCliffsScriptPackage(params: {
   const outputText = extractResponseText(payload);
 
   if (!outputText) {
-    throw new Error("OpenAI returned empty structured output.");
+    throw new Error("AI结构化输出为空。");
   }
 
   debug.metrics.upstreamOutputLength = outputText.length;
@@ -1489,7 +1489,7 @@ export async function generateRedCliffsAiStoryPackage(
       debug,
     };
   } catch (error) {
-    const debug = createRedCliffsAiDebugInfo(getOpenAiConfig());
+    const debug = createRedCliffsAiDebugInfo(getAiConfig());
     const errorMessage =
       error instanceof Error ? error.message : "Unknown AI error.";
     const statusMatch = /status (\d+)\s+([^.]+)\. Body:([\s\S]*)$/i.exec(

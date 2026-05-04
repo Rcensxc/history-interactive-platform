@@ -16,6 +16,20 @@ type ImmersiveStageShellProps = {
   footer?: ReactNode;
 };
 
+function EmptyStandeeSlot() {
+  return (
+    <div
+      aria-hidden="true"
+      className="w-full max-w-[430px] translate-y-3 opacity-45 transition-all duration-300"
+    >
+      <div className="relative overflow-hidden rounded-[38px] border border-white/8 bg-[linear-gradient(180deg,rgba(255,255,255,0.08),rgba(255,255,255,0.01))] p-5 shadow-[0_35px_100px_rgba(0,0,0,0.2)]">
+        <div className="absolute inset-x-12 top-4 h-16 rounded-full bg-white/8 blur-3xl" />
+        <div className="relative min-h-[420px] rounded-[32px] border border-white/8 bg-[linear-gradient(180deg,rgba(255,255,255,0.018),rgba(0,0,0,0.22))]" />
+      </div>
+    </div>
+  );
+}
+
 const stageBackdropClasses = {
   amber:
     "absolute inset-0 bg-[radial-gradient(circle_at_50%_18%,rgba(255,212,147,0.14),transparent_24%),radial-gradient(circle_at_15%_24%,rgba(255,255,255,0.06),transparent_28%),linear-gradient(180deg,rgba(11,13,16,0.06)_0%,rgba(11,13,16,0.24)_42%,rgba(6,7,10,0.96)_100%)]",
@@ -71,11 +85,11 @@ export function ImmersiveStageShell({
           }}
           className="relative flex min-h-[calc(100vh-8rem)] flex-col justify-end outline-none"
         >
-          {standee ? (
-            <div className="pointer-events-none absolute inset-x-0 bottom-[11.5rem] z-10 px-4 md:px-8">
-              <div className="mx-auto flex max-w-6xl justify-center">{standee}</div>
+          <div className="pointer-events-none absolute inset-x-0 bottom-[11.5rem] z-10 px-4 md:px-8">
+            <div className="mx-auto flex max-w-6xl justify-center">
+              {standee ?? <EmptyStandeeSlot />}
             </div>
-          ) : null}
+          </div>
 
           <div className="relative z-20 mt-auto px-2 pb-2 md:px-3 md:pb-3">
             <div className="mx-auto max-w-6xl rounded-[28px] border border-white/10 bg-[linear-gradient(180deg,rgba(11,13,18,0.88),rgba(7,9,13,0.98))] px-4 pb-4 pt-3 shadow-[0_-18px_55px_rgba(0,0,0,0.3)] backdrop-blur-md md:px-6 md:pb-5 md:pt-4">

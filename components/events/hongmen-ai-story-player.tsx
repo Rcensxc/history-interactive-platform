@@ -10,6 +10,7 @@ import {
   resolveSceneStandee,
   shouldShowSpeakerName,
 } from "@/lib/event-story-runtime";
+import { formatStoryWarningBanner } from "@/lib/story-warning";
 import {
   enrichEventBackgroundAsset,
   enrichEventSpeakerVisual,
@@ -233,7 +234,7 @@ export function HongmenAiStoryPlayer({
       if (payload.source === "fallback-local") {
         setStatusMessage(payload.warning ?? "AI 整包生成失败，已切回本地静态剧情。");
       } else if (payload.warning) {
-        setStatusMessage(payload.warning);
+        setStatusMessage(formatStoryWarningBanner(payload.warning));
       }
     } catch {
       console.warn("[hongmen-ai][client-response]", {

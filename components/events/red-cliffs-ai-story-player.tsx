@@ -10,6 +10,7 @@ import {
   resolveSceneStandee,
   shouldShowSpeakerName,
 } from "@/lib/event-story-runtime";
+import { formatStoryWarningBanner } from "@/lib/story-warning";
 import {
   enrichEventBackgroundAsset,
   enrichEventSpeakerVisual,
@@ -238,7 +239,7 @@ export function RedCliffsAiStoryPlayer({
       if (payload.source === "fallback-local") {
         setStatusMessage(payload.warning ?? "AI 线性脚本生成失败，已切回本地静态剧情。");
       } else if (payload.warning) {
-        setStatusMessage(payload.warning);
+        setStatusMessage(formatStoryWarningBanner(payload.warning));
       }
     } catch {
       console.warn("[red-cliffs-ai][client-response]", {
