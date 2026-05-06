@@ -566,7 +566,7 @@ function validatePackage(params: {
         errors.push(`第 ${index + 1} 条 narration 的 speakerId 必须为空。`);
       }
       if (quotePattern.test(line.text)) {
-        warnings.push(`第 ${index + 1} 条 narration 出现了引号对白，建议改成更纯的视角观察。`);
+        warnings.push(`第 ${index + 1} 条 narration 出现了引号对白。`);
       }
       if (line.text.length > 100) {
         warnings.push(`第 ${index + 1} 条 narration 偏长。`);
@@ -596,9 +596,9 @@ function validatePackage(params: {
       (line) => line.type === "dialogue" && line.speakerId === figure.id,
     ).length;
     if (dialogueCount === 0) {
-      warnings.push(`${figure.name} 当前没有明确 dialogue，可继续观察脚本质量。`);
+      warnings.push(`${figure.name} 当前没有明确 dialogue。`);
     } else if (dialogueCount < 2) {
-      warnings.push(`${figure.name} 当前只有一条 dialogue，讨论感会偏弱。`);
+      warnings.push(`${figure.name} 当前只有一条 dialogue。`);
     }
   });
 
