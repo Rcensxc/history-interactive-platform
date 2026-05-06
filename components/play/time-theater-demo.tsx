@@ -16,6 +16,7 @@ import {
   StageProgressFooter,
 } from "@/components/play/immersive-stage-shell";
 import { StageStandeeCard } from "@/components/play/stage-standee-card";
+import { FloatingBackToDetailButton } from "@/components/ui/floating-back-to-detail-button";
 import { Panel } from "@/components/ui/panel";
 import { PlaceholderArt } from "@/components/ui/placeholder-art";
 import { SectionTitle } from "@/components/ui/section-title";
@@ -402,6 +403,11 @@ export function TimeTheaterDemo() {
 
   return (
     <div className="mx-auto max-w-7xl px-6 py-10 md:px-8 md:py-14">
+      <FloatingBackToDetailButton
+        targetId="time-theater-settings-top"
+        label="回到顶部查看当前设定"
+      />
+
       <section className="mb-8">
         <SectionTitle
           eyebrow="Time Theater"
@@ -412,59 +418,61 @@ export function TimeTheaterDemo() {
 
       <div className="grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
         <div className="space-y-6">
-          <Panel className="p-6 md:p-7">
-            <div className="space-y-5">
-              <div>
-                <p className="text-xs uppercase tracking-[0.3em] text-amber-200/70">
-                  准备页
-                </p>
-                <h2 className="mt-3 font-display text-3xl text-stone-50">
-                  选择同台人物
-                </h2>
-                <p className="mt-3 text-sm leading-7 text-stone-300">
-                  最多可选择三位历史人物同台讨论，至少需要两位才能开始剧场。
-                </p>
-              </div>
+          <div id="time-theater-settings-top">
+            <Panel className="p-6 md:p-7">
+              <div className="space-y-5">
+                <div>
+                  <p className="text-xs uppercase tracking-[0.3em] text-amber-200/70">
+                    准备页
+                  </p>
+                  <h2 className="mt-3 font-display text-3xl text-stone-50">
+                    选择同台人物
+                  </h2>
+                  <p className="mt-3 text-sm leading-7 text-stone-300">
+                    最多可选择三位历史人物同台讨论，至少需要两位才能开始剧场。
+                  </p>
+                </div>
 
-              <div className="grid gap-3">
-                {cast.map((figure) => {
-                  const active = selectedIds.includes(figure.id);
+                <div className="grid gap-3">
+                  {cast.map((figure) => {
+                    const active = selectedIds.includes(figure.id);
 
-                  return (
-                    <button
-                      key={figure.id}
-                      type="button"
-                      onClick={() => toggleCharacter(figure.id)}
-                      className="w-full text-left"
-                    >
-                      <Panel
-                        className={cn(
-                          "p-4 transition-colors",
-                          active
-                            ? "border-amber-200/25 bg-amber-100/8"
-                            : "hover:border-white/20",
-                        )}
+                    return (
+                      <button
+                        key={figure.id}
+                        type="button"
+                        onClick={() => toggleCharacter(figure.id)}
+                        className="w-full text-left"
                       >
-                        <div className="flex items-center gap-4">
-                          <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-white/5 font-display text-lg text-stone-50">
-                            {figure.portraitLabel}
+                        <Panel
+                          className={cn(
+                            "p-4 transition-colors",
+                            active
+                              ? "border-amber-200/25 bg-amber-100/8"
+                              : "hover:border-white/20",
+                          )}
+                        >
+                          <div className="flex items-center gap-4">
+                            <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-white/5 font-display text-lg text-stone-50">
+                              {figure.portraitLabel}
+                            </div>
+                            <div>
+                              <p className="font-display text-2xl text-stone-50">
+                                {figure.name}
+                              </p>
+                              <p className="text-sm text-stone-400">
+                                {figure.dynasty} · {figure.role}
+                              </p>
+                            </div>
                           </div>
-                          <div>
-                            <p className="font-display text-2xl text-stone-50">
-                              {figure.name}
-                            </p>
-                            <p className="text-sm text-stone-400">
-                              {figure.dynasty} · {figure.role}
-                            </p>
-                          </div>
-                        </div>
-                      </Panel>
-                    </button>
-                  );
-                })}
+                        </Panel>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
-          </Panel>
+            </Panel>
+          </div>
         </div>
 
         <div className="space-y-6">

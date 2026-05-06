@@ -27,6 +27,8 @@ export function PlaceholderArt({
   className,
   imageSrc,
 }: PlaceholderArtProps) {
+  const hasImage = !!imageSrc;
+
   return (
     <div
       className={cn(
@@ -42,9 +44,15 @@ export function PlaceholderArt({
           style={{ backgroundImage: `url("${imageSrc}")` }}
         />
       ) : null}
-      <div className="relative flex h-full min-h-[160px] flex-col justify-between rounded-[20px] border border-white/10 bg-black/10 p-5">
-        <span className="text-xs uppercase tracking-[0.35em] text-stone-300/70">
-        </span>
+      {hasImage ? (
+        <div className="absolute inset-0 bg-gradient-to-t from-black/58 via-black/16 to-transparent" />
+      ) : null}
+      <div
+        className={cn(
+          "relative flex h-full min-h-[160px] flex-col justify-end",
+          hasImage ? "p-0" : "rounded-[20px] px-1 py-1",
+        )}
+      >
         <div>
           <div className="font-display text-5xl text-stone-50">{label}</div>
           {caption ? (

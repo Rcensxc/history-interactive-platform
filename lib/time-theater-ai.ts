@@ -605,17 +605,17 @@ function validatePackage(params: {
   const dialogueLines = scriptPackage.lines.filter((line) => line.type === "dialogue");
   const narrationLines = scriptPackage.lines.filter((line) => line.type === "narration");
   if (dialogueLines.length < 10) {
-    warnings.push("当前 dialogue 总量偏少，整体更容易读成观点摘要。");
+    warnings.push("调试信息：当前剧本总量偏少");
   }
   if (narrationLines.length > 4) {
-    warnings.push("当前 narration 偏多，可能会削弱同台讨论感。");
+    warnings.push("调试信息：当前旁白偏多");
   }
 
   const responseLikeCount = dialogueLines.filter((line) =>
     responsePattern.test(line.text),
   ).length;
   if (responseLikeCount < 2) {
-    warnings.push("当前脚本里角色之间的明确回应偏少，讨论感还不够强。");
+    warnings.push("调试信息：当前脚本里角色之间的明确回应与讨论偏少");
   }
 
   return {

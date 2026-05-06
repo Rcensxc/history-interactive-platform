@@ -11,6 +11,7 @@ import {
 import { getEventCoverImage } from "@/data/site-asset-manifest";
 import { cn } from "@/lib/cn";
 import { Panel } from "@/components/ui/panel";
+import { FloatingBackToDetailButton } from "@/components/ui/floating-back-to-detail-button";
 import { PlaceholderArt } from "@/components/ui/placeholder-art";
 
 const statusStyles: Record<string, string> = {
@@ -50,6 +51,11 @@ export function EventHall() {
 
   return (
     <div className="grid gap-6 xl:grid-cols-[1.22fr_0.98fr]">
+      <FloatingBackToDetailButton
+        targetId="events-detail-top"
+        label="回到顶部查看事件详情"
+      />
+
       <div className="space-y-6">
         <Panel className="p-6">
           <div className="flex flex-col gap-6">
@@ -170,6 +176,7 @@ export function EventHall() {
         )}
       </div>
 
+      <div id="events-detail-top">
       <Panel className="h-fit p-6 xl:sticky xl:top-28">
         {selectedEvent ? (
           <div className="space-y-5">
@@ -244,7 +251,8 @@ export function EventHall() {
             当前没有可展示的事件资料，请先调整筛选条件。
           </div>
         )}
-      </Panel>
+        </Panel>
+      </div>
     </div>
   );
 }

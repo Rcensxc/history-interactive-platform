@@ -20,12 +20,9 @@ function EmptyStandeeSlot() {
   return (
     <div
       aria-hidden="true"
-      className="w-full max-w-[430px] translate-y-3 opacity-45 transition-all duration-300"
+      className="w-full max-w-[430px] translate-y-3 transition-all duration-300"
     >
-      <div className="relative overflow-hidden rounded-[38px] border border-white/8 bg-[linear-gradient(180deg,rgba(255,255,255,0.08),rgba(255,255,255,0.01))] p-5 shadow-[0_35px_100px_rgba(0,0,0,0.2)]">
-        <div className="absolute inset-x-12 top-4 h-16 rounded-full bg-white/8 blur-3xl" />
-        <div className="relative min-h-[420px] rounded-[32px] border border-white/8 bg-[linear-gradient(180deg,rgba(255,255,255,0.018),rgba(0,0,0,0.22))]" />
-      </div>
+      <div className="min-h-[420px]" />
     </div>
   );
 }

@@ -15,6 +15,7 @@ import {
   historicalFigures,
 } from "@/data/history-registry";
 import { CharacterAssetArt } from "@/components/characters/character-asset-art";
+import { FloatingBackToDetailButton } from "@/components/ui/floating-back-to-detail-button";
 import { Panel } from "@/components/ui/panel";
 import { cn } from "@/lib/cn";
 import type { FigureExperienceOption } from "@/types/content";
@@ -128,6 +129,11 @@ export function FigureGallery() {
 
   return (
     <div className="grid gap-6 xl:grid-cols-[1.25fr_0.95fr]">
+      <FloatingBackToDetailButton
+        targetId="people-detail-top"
+        label="回到顶部查看人物详情"
+      />
+
       <div className="space-y-6">
         <Panel className="p-6">
           <div className="flex flex-col gap-6">
@@ -244,6 +250,7 @@ export function FigureGallery() {
         )}
       </div>
 
+      <div id="people-detail-top">
       <Panel className="h-fit p-6 xl:sticky xl:top-28">
         {selectedFigure ? (
           <div className="space-y-5">
@@ -346,6 +353,7 @@ export function FigureGallery() {
           </div>
         )}
       </Panel>
+      </div>
     </div>
   );
 }
